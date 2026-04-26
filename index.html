@@ -531,8 +531,14 @@
     <a href="#how" class="btn-outline">Kaise Kaam Karta Hai?</a>
   </div>
 
+  <div class="floating-cards">
+    <div class="float-card"><div class="emoji">😂</div><div class="label">Funny Friend</div></div>
+    <div class="float-card"><div class="emoji">🤗</div><div class="label">Caring Friend</div></div>
+    <div class="float-card"><div class="emoji">💪</div><div class="label">Best Friend</div></div>
+    <div class="float-card"><div class="emoji">😎</div><div class="label">Bro Mode</div></div>
+  </div>
+</div>
 
-  
 <!-- STATS -->
 <section>
   <div class="stats">
@@ -543,7 +549,19 @@
   </div>
 </section>
 
-
+<!-- MOOD SELECTOR -->
+<section style="padding-top:0">
+  <div class="section-title">Aaj kaisa feel kar rahe ho? 💭</div>
+  <div class="section-sub">Apna mood batao — hum perfect dost dhundh denge</div>
+  <div class="mood-row">
+    <button class="mood-btn">😢 Sad</button>
+    <button class="mood-btn">😰 Anxious</button>
+    <button class="mood-btn">😔 Lonely</button>
+    <button class="mood-btn">😠 Angry</button>
+    <button class="mood-btn">😕 Confused</button>
+    <button class="mood-btn">🙂 Just want to talk</button>
+  </div>
+</section>
 
 <!-- FRIEND TYPES -->
 <section id="friends">
@@ -681,4 +699,75 @@
       <input type="number" placeholder="₹29">
     </div>
 
-  
+    <div class="form-group">
+      <label>🔢 UTR / Transaction ID</label>
+      <input type="text" placeholder="12-digit UTR ID">
+    </div>
+
+    <button class="submit-btn" onclick="submitForm()">✅ Request Submit Karo</button>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section style="padding-top: 0;">
+  <div class="section-title">Log Kya Kehte Hain? 💬</div>
+  <div class="section-sub">Humara kaafi accha feedback raha hai</div>
+  <div class="testimonials">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-text">"Bahut akela feel kar raha tha. Funny Friend ne 10 min mein mood bilkul change kar diya!"</div>
+      <div class="testi-name">— Rahul, Mumbai</div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-text">"Caring Friend ne meri puri baat suni bina judge kiye. Bahut relief mili."</div>
+      <div class="testi-name">— Priya, Delhi</div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★☆</div>
+      <div class="testi-text">"Soch nahi sakta tha ki ek stranger itna samjhega. Highly recommend!"</div>
+      <div class="testi-name">— Arjun, Pune</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="f-logo">🤙 Call a Friend</div>
+  <p>Koi bhi akela nahi hona chahiye — hum hain na!</p>
+  <p style="margin-top: 8px;">© 2025 Call a Friend. All rights reserved.</p>
+</footer>
+
+<script>
+  // Time slot selection
+  function selectSlot(el, price) {
+    document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('priceDisplay').textContent = '₹' + price;
+  }
+
+  // Friend card selection
+  document.querySelectorAll('.friend-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.friend-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+    });
+  });
+
+  // Mood button selection
+  document.querySelectorAll('.mood-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mood-btn').forEach(b => b.style.background = '');
+      btn.style.background = 'linear-gradient(90deg, #0077b6, #00b4d8)';
+      btn.style.color = 'white';
+      btn.style.borderColor = 'transparent';
+    });
+  });
+
+  // Form submit
+  function submitForm() {
+    alert('✅ Aapki request submit ho gayi!\n\nAdmin payment verify karenge aur jald hi call schedule hogi. Thank you! 🤙');
+  }
+</script>
+</body>
+</html>
