@@ -177,46 +177,7 @@
     font-size: 0.95rem;
   }
 
-  /* FRIEND TYPES */
-  .friends-grid {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    max-width: 900px;
-    margin: 0 auto;
-  }
-  .friend-card {
-    background: white;
-    border-radius: 24px;
-    padding: 28px 22px;
-    text-align: center;
-    width: 150px;
-    cursor: pointer;
-    box-shadow: var(--shadow);
-    transition: all 0.25s;
-    border: 2.5px solid transparent;
-    position: relative;
-    overflow: hidden;
-  }
-  .friend-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--blue1), var(--cyan));
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .friend-card:hover, .friend-card.active {
-    border-color: var(--blue1);
-    transform: translateY(-6px);
-    box-shadow: 0 16px 40px rgba(0,119,182,0.18);
-  }
-  .friend-card:hover::before, .friend-card.active::before { opacity: 1; }
-  .friend-card .f-emoji { font-size: 2.8rem; margin-bottom: 10px; }
-  .friend-card .f-name { font-weight: 800; font-size: 0.9rem; color: var(--text); margin-bottom: 4px; }
-  .friend-card .f-desc { font-size: 0.72rem; color: var(--muted); line-height: 1.4; }
+
 
   /* BOOKING FORM */
   .booking-section {
@@ -531,23 +492,7 @@
     <a href="#how" class="btn-outline">Kaise Kaam Karta Hai?</a>
   </div>
 
-  <div class="floating-cards">
-    <div class="float-card"><div class="emoji">😂</div><div class="label">Funny Friend</div></div>
-    <div class="float-card"><div class="emoji">🤗</div><div class="label">Caring Friend</div></div>
-    <div class="float-card"><div class="emoji">💪</div><div class="label">Best Friend</div></div>
-    <div class="float-card"><div class="emoji">😎</div><div class="label">Bro Mode</div></div>
-  </div>
 </div>
-
-<!-- STATS -->
-<section>
-  <div class="stats">
-    <div class="stat-card"><div class="stat-num">1000+</div><div class="stat-label">Happy Users</div></div>
-    <div class="stat-card"><div class="stat-num">4.8⭐</div><div class="stat-label">Average Rating</div></div>
-    <div class="stat-card"><div class="stat-num">50+</div><div class="stat-label">Active Friends</div></div>
-    <div class="stat-card"><div class="stat-num">24/7</div><div class="stat-label">Available</div></div>
-  </div>
-</section>
 
 <!-- MOOD SELECTOR -->
 <section style="padding-top:0">
@@ -563,38 +508,7 @@
   </div>
 </section>
 
-<!-- FRIEND TYPES -->
-<section id="friends">
-  <div class="section-title">Kaisa Dost Chahiye? 👥</div>
-  <div class="section-sub">Apni personality ke hisaab se dost choose karo</div>
-  <div class="friends-grid">
-    <div class="friend-card active">
-      <div class="f-emoji">😂</div>
-      <div class="f-name">Funny Friend</div>
-      <div class="f-desc">Jokes aur hassi ke saath mood lifter</div>
-    </div>
-    <div class="friend-card">
-      <div class="f-emoji">🤗</div>
-      <div class="f-name">Caring Friend</div>
-      <div class="f-desc">Sunne wala, samajhne wala</div>
-    </div>
-    <div class="friend-card">
-      <div class="f-emoji">💪</div>
-      <div class="f-name">Best Friend</div>
-      <div class="f-desc">Sach bolne wala, hamesha saath</div>
-    </div>
-    <div class="friend-card">
-      <div class="f-emoji">😎</div>
-      <div class="f-name">Bro</div>
-      <div class="f-desc">Chill vibes, no drama</div>
-    </div>
-    <div class="friend-card">
-      <div class="f-emoji">✨</div>
-      <div class="f-name">More...</div>
-      <div class="f-desc">Aur bhi options available hain</div>
-    </div>
-  </div>
-</section>
+
 
 <!-- HOW IT WORKS -->
 <section id="how" style="background: white; border-radius: 40px; max-width: 900px; margin: 0 auto 40px; padding: 48px 20px;">
@@ -663,10 +577,10 @@
     <div class="form-group">
       <label>⏱️ Kitni Der Baat Karni Hai?</label>
       <div class="time-slots">
-        <div class="slot selected" onclick="selectSlot(this, 29)">5 min — ₹29</div>
-        <div class="slot" onclick="selectSlot(this, 49)">10 min — ₹49</div>
-        <div class="slot" onclick="selectSlot(this, 79)">15 min — ₹79</div>
-        <div class="slot" onclick="selectSlot(this, 129)">30 min — ₹129</div>
+        <div class="slot selected" onclick="selectSlot(this, 59)">5 min — ₹59</div>
+        <div class="slot" onclick="selectSlot(this, 99)">10 min — ₹99</div>
+        <div class="slot" onclick="selectSlot(this, 149)">15 min — ₹149</div>
+        <div class="slot" onclick="selectSlot(this, 249)">30 min — ₹249</div>
       </div>
     </div>
 
@@ -689,8 +603,8 @@
     <!-- QR CODE -->
     <div class="qr-section">
       <div class="qr-placeholder">📱</div>
-      <p>UPI se payment karo</p>
-      <strong>callfriend@upi</strong>
+      <p>Any UPI se payment karo</p>
+      <strong>90219582**@upi</strong>
       <p style="margin-top: 8px; font-size:0.78rem;">Ya neeche amount aur UTR ID dalo</p>
     </div>
 
@@ -705,6 +619,18 @@
     </div>
 
     <button class="submit-btn" onclick="submitForm()">✅ Request Submit Karo</button>
+  </div>
+</section>
+
+<!-- STATS -->
+<section style="padding-top: 0;">
+  <div class="section-title">Hamare Saath Hain 💙</div>
+  <div class="section-sub">Trusted by thousands of users across India</div>
+  <div class="stats">
+    <div class="stat-card"><div class="stat-num">1000+</div><div class="stat-label">Happy Users</div></div>
+    <div class="stat-card"><div class="stat-num">4.8⭐</div><div class="stat-label">Average Rating</div></div>
+    <div class="stat-card"><div class="stat-num">56+</div><div class="stat-label">Active Friends</div></div>
+    <div class="stat-card"><div class="stat-num">24/7</div><div class="stat-label">Available</div></div>
   </div>
 </section>
 
@@ -735,7 +661,7 @@
 <footer>
   <div class="f-logo">🤙 Call a Friend</div>
   <p>Koi bhi akela nahi hona chahiye — hum hain na!</p>
-  <p style="margin-top: 8px;">© 2025 Call a Friend. All rights reserved.</p>
+  <p style="margin-top: 8px;">© 2026 Call a Friend. All rights reserved.</p>
 </footer>
 
 <script>
@@ -746,13 +672,7 @@
     document.getElementById('priceDisplay').textContent = '₹' + price;
   }
 
-  // Friend card selection
-  document.querySelectorAll('.friend-card').forEach(card => {
-    card.addEventListener('click', () => {
-      document.querySelectorAll('.friend-card').forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-    });
-  });
+
 
   // Mood button selection
   document.querySelectorAll('.mood-btn').forEach(btn => {
