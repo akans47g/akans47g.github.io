@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f0f9ff;
+  --sidebar:#0a1628;
+  --ocean:#0369a1;
+  --sky:#38bdf8;
+  --accent:#06b6d4;
+  --white:#ffffff;
+  --ink:#0a1628;
+  --slate:#64748b;
+  --card-shadow:0 2px 16px rgba(3,105,161,0.08);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:240px;min-height:100vh;background:var(--sidebar);
+  display:flex;flex-direction:column;
+  position:fixed;left:0;top:0;bottom:0;z-index:100;
+  box-shadow:4px 0 24px rgba(0,0,0,0.2);
+  transition:transform 0.3s;
+}
+.sb-logo{
+  padding:28px 24px 20px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.sb-logo-title{font-size:1rem;font-weight:700;color:white;}
+.sb-logo-sub{font-size:0.7rem;color:rgba(255,255,255,0.3);font-family:'DM Mono',monospace;letter-spacing:1px;margin-top:3px;}
+.sb-nav{padding:20px 12px;flex:1;}
+.sb-section-label{font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.25);letter-spacing:2px;text-transform:uppercase;padding:0 12px;margin-bottom:8px;margin-top:16px;}
+.sb-link{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:10px;
+  color:rgba(255,255,255,0.5);font-size:0.88rem;font-weight:500;
+  cursor:pointer;transition:all 0.15s;text-decoration:none;
+  margin-bottom:2px;
+}
+.sb-link:hover{background:rgba(255,255,255,0.06);color:white;}
+.sb-link.active{background:linear-gradient(135deg,rgba(3,105,161,0.5),rgba(6,182,212,0.3));color:white;font-weight:600;}
+.sb-link .sb-icon{font-size:1rem;width:20px;text-align:center;}
+.sb-bottom{
+  padding:16px 12px;
+  border-top:1px solid rgba(255,255,255,0.06);
+}
+.btn-logout{
+  width:100%;padding:10px;
+  background:rgba(239,68,68,0.12);
+  border:1px solid rgba(239,68,68,0.2);
+  color:rgba(255,100,100,0.8);border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn-logout:hover{background:rgba(239,68,68,0.2);color:#fca5a5;}
+
+/* ── MAIN CONTENT ── */
+.main{margin-left:240px;flex:1;min-height:100vh;display:flex;flex-direction:column;}
+
+/* TOP BAR */
+.topbar{
+  background:white;padding:16px 28px;
+  display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid #e0f2fe;
+  position:sticky;top:0;z-index:50;
+}
+.topbar-title{font-size:1.1rem;font-weight:700;color:var(--ink);}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.live-badge{
+  display:flex;align-items:center;gap:6px;
+  background:#dcfce7;color:#166534;
+  font-size:0.75rem;font-weight:700;
+  padding:6px 12px;border-radius:100px;
+}
+.live-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.4)}}
+
+/* CONTENT */
+.content{padding:28px;flex:1;}
+
+/* STATS GRID */
+.stats-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:16px;margin-bottom:28px;
+}
+.stat-card{
+  background:white;border-radius:18px;padding:22px 20px;
+  box-shadow:var(--card-shadow);border:1px solid rgba(56,189,248,0.1);
+  position:relative;overflow:hidden;transition:transform 0.2s;
+}
+.stat-card:hover{transform:translateY(-3px);}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+}
+.stat-card.blue::before{background:linear-gradient(90deg,#0369a1,#38bdf8);}
+.stat-card.green::before{background:linear-gradient(90deg,#16a34a,#4ade80);}
+.stat-card.orange::before{background:linear-gradient(90deg,#ea580c,#fb923c);}
+.stat-card.purple::before{background:linear-gradient(90deg,#7c3aed,#a78bfa);}
+.stat-card.cyan::before{background:linear-gradient(90deg,#0891b2,#22d3ee);}
+.stat-icon{font-size:1.6rem;margin-bottom:12px;}
+.stat-num{font-size:1.9rem;font-weight:700;color:var(--ink);font-family:'DM Mono',monospace;line-height:1;}
+.stat-label{font-size:0.78rem;color:var(--slate);font-weight:600;margin-top:6px;}
+.stat-change{font-size:0.72rem;color:#16a34a;font-weight:600;margin-top:4px;}
+
+/* FILTER BAR */
+.filter-bar{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  margin-bottom:20px;
+}
+.filter-bar input{
+  flex:1;min-width:200px;padding:10px 16px;
+  border:1.5px solid #e0f2fe;border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:0.88rem;
+  outline:none;color:var(--ink);background:white;
+  transition:border-color 0.2s;
+}
+.filter-bar input:focus{border-color:var(--sky);}
+.filter-btn{
+  padding:10px 18px;border-radius:10px;border:1.5px solid #e0f2fe;
+  background:white;font-family:'DM Sans',sans-serif;font-size:0.82rem;
+  font-weight:600;cursor:pointer;color:var(--slate);transition:all 0.15s;
+  white-space:nowrap;
+}
+.filter-btn:hover,.filter-btn.active{
+  background:var(--ocean);color:white;border-color:var(--ocean);
+}
+
+/* BOOKINGS TABLE */
+.bookings-wrap{background:white;border-radius:18px;box-shadow:var(--card-shadow);overflow:hidden;border:1px solid rgba(56,189,248,0.1);}
+.bw-header{
+  padding:18px 24px;border-bottom:1px solid #f0f9ff;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.bw-title{font-size:0.95rem;font-weight:700;color:var(--ink);}
+.bw-count{font-size:0.78rem;color:var(--slate);font-family:'DM Mono',monospace;}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead{background:#f8fbff;}
+th{
+  padding:12px 16px;text-align:left;
+  font-size:0.72rem;font-weight:700;color:var(--slate);
+  letter-spacing:0.5px;text-transform:uppercase;
+  white-space:nowrap;border-bottom:1px solid #e0f2fe;
+}
+td{
+  padding:14px 16px;font-size:0.85rem;
+  border-bottom:1px solid #f0f9ff;
+  vertical-align:middle;
+}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#f8fbff;}
+
+.td-name{font-weight:600;color:var(--ink);}
+.td-phone{
+  font-family:'DM Mono',monospace;font-size:0.82rem;
+  color:var(--ocean);font-weight:500;
+}
+.td-friend{
+  background:#e0f2fe;color:#0369a1;
+  padding:4px 10px;border-radius:100px;
+  font-size:0.75rem;font-weight:700;
+  display:inline-block;white-space:nowrap;
+}
+.td-plan{font-weight:600;color:var(--ink);white-space:nowrap;}
+.td-amount{
+  font-family:'DM Mono',monospace;font-weight:700;
+  color:#16a34a;font-size:0.9rem;
+}
+.td-utr{font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--slate);}
+.td-time{font-size:0.78rem;color:var(--slate);white-space:nowrap;}
+
+/* STATUS BADGE */
+.status-badge{
+  padding:5px 12px;border-radius:100px;font-size:0.72rem;
+  font-weight:700;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+}
+.status-pending{background:#fef3c7;color:#92400e;}
+.status-approved{background:#dcfce7;color:#166534;}
+.status-rejected{background:#fee2e2;color:#991b1b;}
+
+/* ACTION BUTTONS */
+.action-btns{display:flex;gap:6px;}
+.btn-approve,.btn-reject,.btn-detail{
+  padding:6px 12px;border-radius:8px;border:none;
+  font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:700;
+  cursor:pointer;transition:all 0.15s;white-space:nowrap;
+}
+.btn-approve{background:#dcfce7;color:#166534;}
+.btn-approve:hover{background:#16a34a;color:white;}
+.btn-reject{background:#fee2e2;color:#991b1b;}
+.btn-reject:hover{background:#dc2626;color:white;}
+.btn-detail{background:#e0f2fe;color:#0369a1;}
+.btn-detail:hover{background:#0369a1;color:white;}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:60px 20px;color:var(--slate);}
+.empty-state .es-icon{font-size:3rem;margin-bottom:12px;}
+.empty-state p{font-size:0.88rem;}
+
+/* LOADING */
+.loading-row{text-align:center;padding:40px;color:var(--slate);font-size:0.88rem;}
+
+/* MODAL */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(10,22,40,0.7);backdrop-filter:blur(4px);
+  z-index:200;align-items:center;justify-content:center;
+}
+.modal-overlay.show{display:flex;}
+.modal{
+  background:white;border-radius:20px;padding:32px;
+  max-width:480px;width:90%;max-height:90vh;overflow-y:auto;
+  box-shadow:0 32px 80px rgba(0,0,0,0.3);
+  animation:modalIn 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.modal-title{font-size:1.1rem;font-weight:700;margin-bottom:20px;color:var(--ink);}
+.modal-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f0f9ff;}
+.modal-row:last-of-type{border-bottom:none;}
+.modal-key{font-size:0.78rem;color:var(--slate);font-weight:600;}
+.modal-val{font-size:0.85rem;color:var(--ink);font-weight:600;text-align:right;max-width:260px;word-break:break-all;}
+.modal-msg{background:#f8fbff;border-radius:12px;padding:14px;margin:14px 0;font-size:0.85rem;color:var(--slate);font-style:italic;line-height:1.6;}
+.modal-close{
+  width:100%;margin-top:16px;padding:12px;
+  background:var(--ocean);color:white;border:none;border-radius:12px;
+  font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer;
+}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:#0a1628;color:white;padding:12px 24px;border-radius:12px;
+  font-size:0.88rem;font-weight:600;z-index:999;
+  box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  display:none;white-space:nowrap;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .menu-btn{display:flex;}
+}
+.menu-btn{
+  display:none;background:none;border:none;
+  font-size:1.4rem;cursor:pointer;padding:4px;
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div style="font-size:1.5rem;margin-bottom:8px;">🤙</div>
+    <div class="sb-logo-title">Call a Friend</div>
+    <div class="sb-logo-sub">ADMIN PANEL</div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section-label">Main</div>
+    <a class="sb-link active" onclick="showSection('bookings')">
+      <span class="sb-icon">📋</span> All Bookings
+    </a>
+    <a class="sb-link" onclick="showSection('pending')">
+      <span class="sb-icon">⏳</span> Pending
+      <span id="pendingCount" style="margin-left:auto;background:rgba(251,191,36,0.2);color:#92400e;padding:2px 8px;border-radius:100px;font-size:0.7rem;font-weight:700;"></span>
+    </a>
+    <a class="sb-link" onclick="showSection('approved')">
+      <span class="sb-icon">✅</span> Approved
+    </a>
+    <a class="sb-link" onclick="showSection('rejected')">
+      <span class="sb-icon">❌</span> Rejected
+    </a>
+
+    <div class="sb-section-label">Reports</div>
+    <a class="sb-link" onclick="showSection('earnings')">
+      <span class="sb-icon">💰</span> Earnings
+    </a>
+
+    <div class="sb-section-label">Account</div>
+    <a class="sb-link" href="../index.html">
+      <span class="sb-icon">🌐</span> Main Website
+    </a>
+  </nav>
+
+  <div class="sb-bottom">
+    <button class="btn-logout" onclick="doLogout()">🚪 Logout</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div class="topbar-title" id="pageTitle">📋 All Bookings</div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-badge"><div class="live-dot"></div> Live</div>
+      <span style="font-size:0.8rem;color:var(--slate);font-family:'DM Mono',monospace;" id="adminName">Admin</span>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-icon">📋</div>
+        <div class="stat-num" id="statTotal">0</div>
+        <div class="stat-label">Total Bookings</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-num" id="statPending">0</div>
+        <div class="stat-label">Pending</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-num" id="statApproved">0</div>
+        <div class="stat-label">Approved</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon">❌</div>
+        <div class="stat-num" id="statRejected">0</div>
+        <div class="stat-label">Rejected</div>
+      </div>
+      <div class="stat-card cyan">
+        <div class="stat-icon">💰</div>
+        <div class="stat-num" id="statEarning">₹0</div>
+        <div class="stat-label">Total Earnings</div>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="🔍 Naam, phone ya UTR se search karo..." oninput="filterTable()">
+      <button class="filter-btn active" onclick="setFilter('all',this)">Sab</button>
+      <button class="filter-btn" onclick="setFilter('pending',this)">⏳ Pending</button>
+      <button class="filter-btn" onclick="setFilter('approved',this)">✅ Approved</button>
+      <button class="filter-btn" onclick="setFilter('rejected',this)">❌ Rejected</button>
+    </div>
+
+    <!-- BOOKINGS TABLE -->
+    <div class="bookings-wrap">
+      <div class="bw-header">
+        <div class="bw-title">Bookings List</div>
+        <div class="bw-count" id="tableCount">Loading...</div>
+      </div>
+      <div class="table-wrap">
+        <table id="bookingsTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Naam</th>
+              <th>Phone</th>
+              <th>Friend Type</th>
+              <th>Plan</th>
+              <th>Amount</th>
+              <th>UTR ID</th>
+              <th>Call Time</th>
+              <th>Submit Time</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsTbody">
+            <tr><td colspan="11" class="loading-row">⏳ Loading bookings...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EARNINGS SECTION (hidden by default) -->
+    <div id="earningsSection" style="display:none;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:8px;">
+        <div class="stat-card green" style="padding:28px 24px;">
+          <div class="stat-icon">💵</div>
+          <div class="stat-num" id="earnTotal">₹0</div>
+          <div class="stat-label">Total Earnings</div>
+        </div>
+        <div class="stat-card blue" style="padding:28px 24px;">
+          <div class="stat-icon">📅</div>
+          <div class="stat-num" id="earnToday">₹0</div>
+          <div class="stat-label">Aaj ki Earnings</div>
+        </div>
+        <div class="stat-card purple" style="padding:28px 24px;">
+          <div class="stat-icon">📆</div>
+          <div class="stat-num" id="earnWeek">₹0</div>
+          <div class="stat-label">Is Hafte</div>
+        </div>
+        <div class="stat-card orange" style="padding:28px 24px;">
+          <div class="stat-icon">🗓️</div>
+          <div class="stat-num" id="earnMonth">₹0</div>
+          <div class="stat-label">Is Mahine</div>
+        </div>
+      </div>
+
+      <div class="bookings-wrap" style="margin-top:20px;">
+        <div class="bw-header">
+          <div class="bw-title">💰 Approved Payments Detail</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Naam</th><th>Phone</th><th>Plan</th><th>Amount</th><th>UTR</th><th>Date</th></tr>
+            </thead>
+            <tbody id="earnTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOOKING DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent">
+    <div class="modal-title">📋 Booking Detail</div>
+    <div id="modalBody"></div>
+    <button class="modal-close" onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script type="module">
+import { auth } from "../js/firebase-config.js";
+import { db } from "../js/firebase-config.js";
+import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { collection, onSnapshot, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const ADMIN_EMAIL = "admin@callfriend.com";
+let allBookings = [];
+let currentFilter = "all";
+
+// ── AUTH GUARD ──
+onAuthStateChanged(auth, user => {
+  if(!user || user.email !== ADMIN_EMAIL) {
+    window.location.href = "login.html";
+  } else {
+    document.getElementById("adminName").textContent = user.email;
+    loadBookings();
+  }
+});
+
+// ── LOAD BOOKINGS REAL-TIME ──
+function loadBookings() {
+  const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"));
+  onSnapshot(q, snap => {
+    allBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    updateStats();
+    renderTable();
+    renderEarnings();
+  });
+}
+
+// ── STATS ──
+function updateStats() {
+  const total    = allBookings.length;
+  const pending  = allBookings.filter(b => b.status === "pending").length;
+  const approved = allBookings.filter(b => b.status === "approved").length;
+  const rejected = allBookings.filter(b => b.status === "rejected").length;
+  const earning  = allBookings.filter(b => b.status === "approved").reduce((s,b) => s + (b.amount||0), 0);
+
+  document.getElementById("statTotal").textContent    = total;
+  document.getElementById("statPending").textContent  = pending;
+  document.getElementById("statApproved").textContent = approved;
+  document.getElementById("statRejected").textContent = rejected;
+  document.getElementById("statEarning").textContent  = "₹" + earning;
+  const pc = document.getElementById("pendingCount");
+  if(pc) pc.textContent = pending > 0 ? pending : "";
+}
+
+// ── RENDER TABLE ──
+window.filterTable = function() { renderTable(); };
+window.setFilter = function(f, el) {
+  currentFilter = f;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  renderTable();
+};
+
+function renderTable() {
+  const search = (document.getElementById("searchInput").value || "").toLowerCase();
+  let data = allBookings;
+
+  if(currentFilter !== "all") data = data.filter(b => b.status === currentFilter);
+  if(search) data = data.filter(b =>
+    (b.name||"").toLowerCase().includes(search) ||
+    (b.phone||"").includes(search) ||
+    (b.utr||"").toLowerCase().includes(search)
+  );
+
+  document.getElementById("tableCount").textContent = data.length + " bookings";
+  const tbody = document.getElementById("bookingsTbody");
+
+  if(data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><div class="es-icon">📭</div><p>Koi booking nahi mili</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map((b, i) => {
+    const t = b.createdAt?.toDate().toLocaleString("en-IN", {day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}) || "—";
+    const sClass = b.status === "pending" ? "status-pending" : b.status === "approved" ? "status-approved" : "status-rejected";
+    const sLabel = b.status === "pending" ? "⏳ Pending" : b.status === "approved" ? "✅ Approved" : "❌ Rejected";
+    return `
+    <tr>
+      <td style="color:var(--slate);font-family:'DM Mono',monospace;font-size:0.78rem;">${i+1}</td>
+      <td><div class="td-name">${b.name||"—"}</div><div style="font-size:0.72rem;color:var(--slate);">${b.language||""}</div></td>
+      <td><div class="td-phone">${b.phone||"—"}</div></td>
+      <td><span class="td-friend">${b.friendType||"—"}</span></td>
+      <td><div class="td-plan">${b.selectedPlan||"—"}</div><div style="font-size:0.72rem;col
