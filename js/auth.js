@@ -10,7 +10,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // ── ADMIN EMAIL (sirf yahi login kar sakta hai) ──
-const ADMIN_EMAIL = "admin@callfriend.com"; // 🔴 Apna email daalo
+const ADMIN_EMAIL = "akans47g@gmail.com"; // 🔴 Apna email daalo
 
 // ── Login Function ──
 window.adminLogin = async function () {
