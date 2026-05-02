@@ -725,3 +725,65 @@ footer p { font-size: 0.8rem; color: rgba(255,255,255,0.45); }
   line-height: 0; margin-top: -2px;
 }
 .wave-divider svg { display: block; }
+
+/* ── BOTTOM NAVIGATION ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0 16px;
+  border-top: 1px solid rgba(56,189,248,0.15);
+  box-shadow: 0 -4px 20px rgba(3,105,161,0.10);
+  z-index: 999;
+}
+.bn-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  flex: 1;
+  padding: 4px 0;
+  position: relative;
+  transition: all 0.2s;
+}
+.bn-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+.bn-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.3px;
+  transition: color 0.2s;
+}
+.bn-item.active .bn-label {
+  color: #0369a1;
+}
+.bn-item.active::before {
+  content: '';
+  position: absolute;
+  top: -10px; left: 50%;
+  transform: translateX(-50%);
+  width: 32px; height: 3px;
+  background: linear-gradient(90deg, #0369a1, #06b6d4);
+  border-radius: 0 0 4px 4px;
+}
+.bn-item:hover .bn-icon {
+  transform: translateY(-2px);
+}
+.bn-item:hover .bn-label {
+  color: #0369a1;
+}
+
+/* Add padding to body so content not hidden behind nav */
+body {
+  padding-bottom: 72px;
+           }
+  
