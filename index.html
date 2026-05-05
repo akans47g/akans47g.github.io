@@ -497,18 +497,16 @@ document.querySelectorAll('.mood-chip').forEach(chip => {
 </script>
 
 
-  <!-- ============================================
-     PREMIUM BOTTOM NAVIGATION — Call a Friend
-     ============================================ -->
+  
 
-<!-- Nav Backdrop (blur overlay when My Call active) -->
-<div class="nav-backdrop" id="navBackdrop"></div>
+<!-- ============================================
+   BOTTOM NAVIGATION — Call a Friend
+   ============================================ -->
 
-<!-- Bottom Navigation -->
-<nav class="bottom-nav" id="bottomNav">
+<div class="bottom-nav" id="bottomNav">
 
   <!-- Home -->
-  <a href="#" class="bn-item active" id="bnHome" onclick="switchNav('home', this)">
+  <a href="index.html" class="bn-item active" id="bnHome">
     <div class="bn-icon-wrap">
       <svg class="bn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
@@ -519,19 +517,19 @@ document.querySelectorAll('.mood-chip').forEach(chip => {
     <span class="bn-label">Home</span>
   </a>
 
-  <!-- My Call (Center - Special) -->
-  <a href="#book" class="bn-item bn-center" id="bnMyCall" onclick="switchNav('mycall', this)">
-    <div class="bn-center-btn">
-      <div class="bn-center-ring"></div>
-      <svg class="bn-svg-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 0h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.5a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+  <!-- My Call -->
+  <a href="mycall.html" class="bn-item" id="bnMyCall">
+    <div class="bn-icon-wrap">
+      <svg class="bn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.36 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.64a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
       </svg>
+      <div class="bn-active-dot"></div>
     </div>
-    <span class="bn-label bn-label-center">My Call</span>
+    <span class="bn-label">My Call</span>
   </a>
 
   <!-- Account -->
-  <a href="#" class="bn-item" id="bnAccount" onclick="switchNav('account', this)">
+  <a href="account.html" class="bn-item" id="bnAccount">
     <div class="bn-icon-wrap">
       <svg class="bn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -542,51 +540,62 @@ document.querySelectorAll('.mood-chip').forEach(chip => {
     <span class="bn-label">Account</span>
   </a>
 
-</nav>
+</div>
 
 <script>
-/* ── NAVIGATION SWITCH ── */
-function switchNav(tab, el) {
-  // Remove active from all
-  document.querySelectorAll('.bn-item').forEach(i => i.classList.remove('active'));
-  el.classList.add('active');
-
-  // Ripple effect
-  createNavRipple(el);
-
-  // Haptic feedback (mobile)
-  if (navigator.vibrate) navigator.vibrate(30);
-}
-
-/* ── RIPPLE ON NAV ── */
-function createNavRipple(el) {
-  const ripple = document.createElement('div');
-  ripple.classList.add('nav-ripple');
-  el.appendChild(ripple);
-  setTimeout(() => ripple.remove(), 600);
-}
-
-/* ── HIDE NAV ON SCROLL DOWN, SHOW ON SCROLL UP ── */
-let lastScroll = 0;
-const nav = document.getElementById('bottomNav');
-
-window.addEventListener('scroll', () => {
-  const currentScroll = window.scrollY;
-  if (currentScroll > lastScroll && currentScroll > 100) {
-    nav.classList.add('nav-hidden');
-  } else {
-    nav.classList.remove('nav-hidden');
+(function() {
+  /* Active state based on page */
+  const page = window.location.pathname.split('/').pop() || 'index.html';
+  const map = {
+    'index.html'  : 'bnHome',
+    ''            : 'bnHome',
+    'mycall.html' : 'bnMyCall',
+    'account.html': 'bnAccount'
+  };
+  const activeId = map[page];
+  if (activeId) {
+    document.querySelectorAll('.bn-item').forEach(i => i.classList.remove('active'));
+    const el = document.getElementById(activeId);
+    if (el) el.classList.add('active');
   }
-  lastScroll = currentScroll;
-}, { passive: true });
 
-/* ── CENTER BUTTON PULSE ── */
-const centerBtn = document.querySelector('.bn-center-btn');
-centerBtn.addEventListener('click', () => {
-  centerBtn.classList.add('btn-pressed');
-  setTimeout(() => centerBtn.classList.remove('btn-pressed'), 300);
-});
+  /* Click ripple + bounce */
+  document.querySelectorAll('.bn-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+      const ripple = document.createElement('span');
+      ripple.classList.add('bn-ripple');
+      const rect = this.getBoundingClientRect();
+      ripple.style.left = (e.clientX - rect.left) + 'px';
+      ripple.style.top  = (e.clientY - rect.top)  + 'px';
+      this.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+      const icon = this.querySelector('.bn-icon-wrap');
+      icon.classList.add('bn-bounce');
+      setTimeout(() => icon.classList.remove('bn-bounce'), 400);
+    });
+  });
+
+  /* Entrance animation */
+  const nav = document.getElementById('bottomNav');
+  setTimeout(() => {
+    nav.style.transform = 'translateY(0)';
+    nav.style.opacity = '1';
+  }, 300);
+
+  /* Hide on scroll down, show on scroll up */
+  let lastScroll = 0;
+  window.addEventListener('scroll', () => {
+    const cur = window.scrollY;
+    if (cur > lastScroll && cur > 80) {
+      nav.style.transform = 'translateY(100%)';
+    } else {
+      nav.style.transform = 'translateY(0)';
+    }
+    lastScroll = cur;
+  }, { passive: true });
+})();
 </script>
+  
   
 
 </body>
