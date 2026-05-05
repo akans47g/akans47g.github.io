@@ -1,251 +1,202 @@
 /* ============================================
-   PREMIUM BOTTOM NAVIGATION CSS
-   Call a Friend — nav.css
+   BOTTOM NAVIGATION CSS — Call a Friend
    ============================================ */
 
-/* ── BODY PADDING ── */
+/* Space for nav at bottom */
 body {
   padding-bottom: 80px;
 }
 
-/* ── BOTTOM NAV CONTAINER ── */
+/* ── NAV CONTAINER ── */
 .bottom-nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
   height: 72px;
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(3, 105, 161, 0.08);
-  box-shadow: 0 -8px 32px rgba(3, 105, 161, 0.10),
-              0 -1px 0 rgba(3, 105, 161, 0.06);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 8px;
+  border-top: 1px solid rgba(3, 105, 161, 0.08);
+  box-shadow: 0 -8px 32px rgba(3, 105, 161, 0.10);
   z-index: 999;
+  padding: 0 8px 8px;
 
-  /* Entrance animation */
-  animation: navSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes navSlideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
-/* ── HIDE ON SCROLL DOWN ── */
-.bottom-nav.nav-hidden {
+  /* Entrance animation start state */
   transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.bottom-nav:not(.nav-hidden) {
-  transform: translateY(0);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.5s ease,
+              box-shadow 0.3s ease;
 }
 
-/* ── NAV ITEMS ── */
+/* ── NAV ITEM ── */
 .bn-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  text-decoration: none;
   flex: 1;
-  padding: 8px 4px;
+  padding: 8px 4px 4px;
+  text-decoration: none;
+  color: #94a3b8;
   position: relative;
-  cursor: pointer;
+  border-radius: 16px;
+  transition: color 0.25s ease;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.bn-item:active { transform: scale(0.92); }
+.bn-item:hover { color: #0369a1; }
 
 /* ── ICON WRAP ── */
 .bn-icon-wrap {
   position: relative;
+  width: 28px; height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px; height: 36px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── SVG ICONS ── */
+/* ── SVG ICON ── */
 .bn-svg {
   width: 22px; height: 22px;
-  color: #94a3b8;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: stroke 0.25s ease, transform 0.25s ease;
 }
 
-.bn-item.active .bn-svg {
-  color: #0369a1;
-  transform: scale(1.12);
-  stroke-width: 2.5;
+/* ── LABEL ── */
+.bn-label {
+  font-family: "Plus Jakarta Sans", "DM Sans", sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  transition: color 0.25s ease, transform 0.25s ease;
 }
 
 /* ── ACTIVE DOT ── */
 .bn-active-dot {
   position: absolute;
-  bottom: -4px; left: 50%;
-  transform: translateX(-50%) scale(0);
-  width: 4px; height: 4px;
-  background: #0369a1;
-  border-radius: 50%;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.3s ease;
+  top: -6px; left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 20px; height: 3px;
+  background: linear-gradient(90deg, #0369a1, #06b6d4);
+  border-radius: 0 0 4px 4px;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.35s ease;
   opacity: 0;
 }
 
+/* ── ACTIVE STATE ── */
+.bn-item.active {
+  color: #0369a1;
+}
+
 .bn-item.active .bn-active-dot {
-  transform: translateX(-50%) scale(1);
+  transform: translateX(-50%) scaleX(1);
   opacity: 1;
 }
 
-/* ── LABEL ── */
-.bn-label {
-  font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: #94a3b8;
-  letter-spacing: 0.2px;
-  transition: color 0.3s ease, font-weight 0.2s ease;
-  white-space: nowrap;
+.bn-item.active .bn-svg {
+  stroke: #0369a1;
+  transform: scale(1.1);
 }
 
 .bn-item.active .bn-label {
   color: #0369a1;
   font-weight: 700;
+  transform: scale(1.04);
 }
 
-/* ── CENTER BUTTON (My Call) ── */
-.bn-center {
-  flex: 1.2;
-  padding-top: 0;
-  position: relative;
+/* ── HOVER ── */
+.bn-item:hover .bn-icon-wrap {
+  transform: translateY(-3px);
 }
 
-.bn-center-btn {
-  position: relative;
-  width: 54px; height: 54px;
-  background: linear-gradient(135deg, #0369a1, #06b6d4);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 6px 20px rgba(3, 105, 161, 0.4),
-              0 2px 8px rgba(3, 105, 161, 0.2);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  margin-bottom: 2px;
-  margin-top: -18px;
+.bn-item:hover .bn-svg {
+  stroke: #0369a1;
 }
 
-.bn-center-btn:hover {
-  transform: scale(1.08);
-  box-shadow: 0 10px 28px rgba(3, 105, 161, 0.5);
+/* ── BOUNCE ANIMATION ── */
+@keyframes bnBounce {
+  0%   { transform: scale(1) translateY(0); }
+  30%  { transform: scale(1.2) translateY(-5px); }
+  60%  { transform: scale(0.95) translateY(2px); }
+  100% { transform: scale(1) translateY(0); }
 }
 
-.bn-center-btn.btn-pressed {
-  animation: centerPress 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+.bn-bounce {
+  animation: bnBounce 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-@keyframes centerPress {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(0.9); }
-  100% { transform: scale(1); }
-}
-
-/* ── CENTER RING PULSE ── */
-.bn-center-ring {
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 2px solid rgba(3, 105, 161, 0.3);
-  animation: ringPulse 2s ease-in-out infinite;
-}
-
-@keyframes ringPulse {
-  0%,100% { transform: scale(1); opacity: 0.6; }
-  50%     { transform: scale(1.12); opacity: 0; }
-}
-
-/* ── CENTER SVG ── */
-.bn-svg-center {
-  width: 22px; height: 22px;
-  color: white;
-  stroke-width: 2;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.bn-center.active .bn-svg-center,
-.bn-center:hover .bn-svg-center {
-  transform: scale(1.1) rotate(-5deg);
-}
-
-.bn-label-center {
-  font-size: 0.65rem;
-  color: #0369a1;
-  font-weight: 700;
-}
-
-.bn-center.active .bn-label-center {
-  color: #0369a1;
-}
-
-/* ── RIPPLE ON CLICK ── */
-.nav-ripple {
+/* ── RIPPLE ── */
+.bn-ripple {
   position: absolute;
   width: 60px; height: 60px;
-  background: rgba(3, 105, 161, 0.1);
   border-radius: 50%;
-  top: 50%; left: 50%;
+  background: rgba(3, 105, 161, 0.1);
   transform: translate(-50%, -50%) scale(0);
-  animation: navRipple 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: bnRipple 0.6s linear forwards;
   pointer-events: none;
 }
 
-@keyframes navRipple {
-  to { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
-}
-
-/* ── TOP INDICATOR LINE ── */
-.bottom-nav::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #0369a1, #06b6d4);
-  border-radius: 0 0 2px 2px;
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* ── ICON BOUNCE ON ACTIVE ── */
-@keyframes iconBounce {
-  0%   { transform: scale(1); }
-  30%  { transform: scale(1.25) translateY(-3px); }
-  60%  { transform: scale(0.95); }
-  100% { transform: scale(1.12); }
-}
-
-.bn-item.active .bn-svg {
-  animation: iconBounce 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* ── SAFE AREA (iPhone notch) ── */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .bottom-nav {
-    padding-bottom: env(safe-area-inset-bottom);
-    height: calc(72px + env(safe-area-inset-bottom));
-  }
-  body {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+@keyframes bnRipple {
+  to {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
   }
 }
 
-/* ── DESKTOP HIDE ── */
-@media (min-width: 768px) {
-  .bottom-nav { display: none; }
-  body { padding-bottom: 0; }
+/* ── MY CALL SPECIAL STYLE ── */
+#bnMyCall {
+  position: relative;
+}
+
+#bnMyCall .bn-icon-wrap {
+  background: linear-gradient(135deg, #0369a1, #06b6d4);
+  border-radius: 50%;
+  width: 48px; height: 48px;
+  margin-top: -16px;
+  box-shadow: 0 6px 20px rgba(3, 105, 161, 0.4);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#bnMyCall .bn-svg {
+  stroke: white;
+  width: 20px; height: 20px;
+}
+
+#bnMyCall:hover .bn-icon-wrap {
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 10px 28px rgba(3, 105, 161, 0.5);
+}
+
+#bnMyCall.active .bn-icon-wrap {
+  background: linear-gradient(135deg, #0c1a2e, #0369a1);
+  box-shadow: 0 8px 24px rgba(12, 26, 46, 0.4);
+}
+
+#bnMyCall .bn-active-dot { display: none; }
+
+/* ── PULSE ON MY CALL ── */
+@keyframes callPulse {
+  0%   { box-shadow: 0 6px 20px rgba(3,105,161,0.4), 0 0 0 0 rgba(3,105,161,0.4); }
+  70%  { box-shadow: 0 6px 20px rgba(3,105,161,0.4), 0 0 0 12px rgba(3,105,161,0); }
+  100% { box-shadow: 0 6px 20px rgba(3,105,161,0.4), 0 0 0 0 rgba(3,105,161,0); }
+}
+
+#bnMyCall .bn-icon-wrap {
+  animation: callPulse 2.5s infinite;
+}
+
+#bnMyCall:hover .bn-icon-wrap,
+#bnMyCall.active .bn-icon-wrap {
+  animation: none;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 380px) {
+  .bn-label { font-size: 0.6rem; }
+  #bnMyCall .bn-icon-wrap { width: 42px; height: 42px; }
 }
