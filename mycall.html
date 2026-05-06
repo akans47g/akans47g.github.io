@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Calls — Call a Friend</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/nav.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --primary:#0369a1;--accent:#06b6d4;--dark:#0c1a2e;
+  --white:#fff;--off:#f8fafc;--slate:#64748b;--border:#e2e8f0;
+}
+body{font-family:"Plus Jakarta Sans",sans-serif;background:var(--off);color:var(--dark);min-height:100vh;}
+
+/* HEADER */
+.page-header{
+  background:linear-gradient(135deg,var(--dark) 0%,#0369a1 100%);
+  padding:28px 20px 70px;position:relative;overflow:hidden;
+}
+.page-header::before{
+  content:"";position:absolute;width:280px;height:280px;border-radius:50%;
+  background:rgba(255,255,255,0.04);top:-80px;right:-60px;
+}
+.header-top{
+  display:flex;align-items:center;gap:12px;margin-bottom:20px;
+  position:relative;z-index:1;
+}
+.back-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);
+  color:white;font-size:1rem;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;text-decoration:none;transition:all 0.2s;
+}
+.back-btn:hover{background:rgba(255,255,255,0.2);}
+.header-title{font-size:1rem;font-weight:700;color:white;}
+
+/* STATS ROW */
+.header-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:10px;position:relative;z-index:1;
+}
+.hs-item{
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);
+  border-radius:14px;padding:12px 10px;text-align:center;
+}
+.hs-num{font-size:1.3rem;font-weight:800;color:white;line-height:1;}
+.hs-label{font-size:0.62rem;color:rgba(255,255,255,0.6);font-weight:600;margin-top:3px;}
+
+/* CONTENT */
+.content{
+  margin-top:-32px;padding:0 14px 24px;
+  position:relative;z-index:2;
+}
+
+/* FILTER TABS */
+.filter-tabs{
+  display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;
+  scrollbar-width:none;padding-bottom:2px;
+}
+.filter-tabs::-webkit-scrollbar{display:none;}
+.tab{
+  padding:8px 18px;border-radius:100px;
+  border:1.5px solid var(--border);background:white;
+  font-family:"Plus Jakarta Sans",sans-serif;font-size:0.78rem;
+  font-weight:600;color:var(--slate);cursor:pointer;
+  white-space:nowrap;transition:all 0.2s;flex-shrink:0;
+}
+.tab.active{background:var(--dark);color:white;border-color:var(--dark);}
+.tab:hover:not(.active){border-color:var(--accent);color:var(--primary);}
+
+/* BOOKING CARD */
+.booking-card{
+  background:white;border-radius:18px;padding:18px;
+  margin-bottom:12px;box-shadow:0 2px 12px rgba(3,105,161,0.07);
+  border:1px solid var(--border);
+  animation:fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+  transition:transform 0.2s, box-shadow 0.2s;
+  cursor:pointer;
+}
+.booking-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(3,105,161,0.12);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+.bc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.bc-friend{
+  display:flex;align-items:center;gap:10px;
+}
+.bc-avatar{
+  width:42px;height:42px;border-radius:12px;
+  background:linear-gradient(135deg,#e0f2fe,#cffafe);
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+}
+.bc-name{font-size:0.9rem;font-weight:700;color:var(--dark);}
+.bc-type{font-size:0.72rem;color:var(--slate);margin-top:2px;font-weight:500;}
+
+/* STATUS */
+.status{padding:5px 12px;border-radius:100px;font-size:0.72rem;font-weight:700;}
+.s-pending{background:#fef3c7;color:#92400e;}
+.s-approved{background:#dcfce7;color:#166534;}
+.s-rejected{background:#fee2e2;color:#991b1b;}
+
+/* DIVIDER */
+.bc-divider{height:1px;background:var(--border);margin:12px 0;}
+
+/* DETAILS GRID */
+.bc-details{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.bc-detail{display:flex;flex-direction:column;gap:2px;}
+.bd-label{font-size:0.65rem;color:var(--slate);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
+.bd-value{font-size:0.82rem;font-weight:700;color:var(--dark);}
+.bd-value.green{color:#16a34a;}
+.bd-value.blue{color:var(--primary);}
+
+/* BOOKING ID */
+.bc-id{
+  margin-top:12px;padding:8px 12px;
+  background:#f8fafc;border-radius:10px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.bc-id-label{font-size:0.68rem;color:var(--slate);font-weight:600;}
+.bc-id-val{font-size:0.72rem;font-weight:700;color:var(--primary);font-family:monospace;}
+
+/* EMPTY STATE */
+.empty-state{
+  text-align:center;padding:60px 20px;
+}
+.es-icon{font-size:4rem;margin-bottom:16px;}
+.es-title{font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:8px;}
+.es-sub{font-size:0.85rem;color:var(--slate);line-height:1.6;margin-bottom:24px;}
+.es-btn{
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  color:white;font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;
+  font-size:0.9rem;padding:13px 28px;border-radius:100px;border:none;
+  cursor:pointer;box-shadow:0 6px 20px rgba(3,105,161,0.3);
+  transition:all 0.2s;
+}
+.es-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(3,105,161,0.4);}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--slate);font-size:0.88rem;}
+.loading-spin{
+  width:32px;height:32px;border:3px solid #e0f2fe;
+  border-top-color:var(--primary);border-radius:50%;
+  animation:spin 0.8s linear infinite;margin:0 auto 12px;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* PHONE INPUT */
+.phone-prompt{
+  background:white;border-radius:18px;padding:24px 20px;
+  box-shadow:0 2px 12px rgba(3,105,161,0.07);border:1px solid var(--border);
+  text-align:center;margin-bottom:16px;
+}
+.pp-title{font-size:0.95rem;font-weight:700;margin-bottom:6px;color:var(--dark);}
+.pp-sub{font-size:0.82rem;color:var(--slate);margin-bottom:16px;line-height:1.5;}
+.pp-input{
+  width:100%;padding:12px 14px;border:1.5px solid var(--border);
+  border-radius:12px;font-family:"Plus Jakarta Sans",sans-serif;
+  font-size:0.9rem;color:var(--dark);outline:none;
+  text-align:center;font-weight:600;transition:all 0.2s;
+  margin-bottom:12px;
+}
+.pp-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(6,182,212,0.1);}
+.pp-btn{
+  width:100%;padding:13px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  color:white;border:none;border-radius:12px;
+  font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:0.9rem;
+  cursor:pointer;transition:all 0.2s;
+}
+.pp-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(3,105,161,0.3);}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--dark);color:white;padding:10px 20px;border-radius:100px;
+  font-size:0.82rem;font-weight:600;z-index:999;display:none;
+  box-shadow:0 4px 20px rgba(0,0,0,0.3);white-space:nowrap;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="page-header">
+  <div class="header-top">
+    <a href="index.html" class="back-btn">←</a>
+    <div class="header-title">📞 My Calls</div>
+  </div>
+  <div class="header-stats">
+    <div class="hs-item"><div class="hs-num" id="hTotal">0</div><div class="hs-label">Total</div></div>
+    <div class="hs-item"><div class="hs-num" id="hApproved">0</div><div class="hs-label">Approved</div></div>
+    <div class="hs-item"><div class="hs-num" id="hSpent">₹0</div><div class="hs-label">Spent</div></div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- PHONE PROMPT -->
+  <div class="phone-prompt" id="phonePrompt">
+    <div class="pp-title">📞 Apna Phone Number Dalo</div>
+    <div class="pp-sub">Aapki bookings phone number se dhundhte hain</div>
+    <input class="pp-input" type="tel" id="phoneInput" placeholder="+91 XXXXX XXXXX"
+      onkeydown="if(event.key==='Enter')searchByPhone()">
+    <button class="pp-btn" onclick="searchByPhone()">🔍 Bookings Dhundho</button>
+  </div>
+
+  <!-- FILTER TABS -->
+  <div class="filter-tabs" id="filterTabs" style="display:none;">
+    <div class="tab active" onclick="filterBookings('all',this)">Sab</div>
+    <div class="tab" onclick="filterBookings('pending',this)">⏳ Pending</div>
+    <div class="tab" onclick="filterBookings('approved',this)">✅ Approved</div>
+    <div class="tab" onclick="filterBookings('rejected',this)">❌ Rejected</div>
+  </div>
+
+  <!-- BOOKINGS LIST -->
+  <div id="bookingsList">
+    <div class="loading" style="display:none;" id="loadingEl">
+      <div class="loading-spin"></div>
+      Bookings dhundh rahe hain...
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<!-- NAV -->
+<div id="nav-placeholder"></div>
+<script>
+fetch('nav.html')
+  .then(r => r.text())
+  .then(html => { document.getElementById('nav-placeholder').innerHTML = html; });
+</script>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyChyETFT5LuVb1tkj4R6IG5gx8tyaDJjuc",
+  authDomain:"call-friend-b8bb3.firebaseapp.com",
+  projectId:"call-friend-b8bb3",
+  storageBucket:"call-friend-b8bb3.firebasestorage.app",
+  messagingSenderId:"373738461022",
+  appId:"1:373738461022:web:d9c74804f2018019b6e1cf"
+});
+const db = firebase.firestore();
+
+let allBookings = [];
+let currentFilter = 'all';
+
+// Friend emoji map
+const friendEmoji = {
+  'Funny Friend' : '😂',
+  'Caring Friend': '🤗',
+  'Best Friend'  : '💪',
+  'Bro'          : '😎',
+  'More...'      : '✨'
+};
+
+function getEmoji(type) {
+  for (const [key, val] of Object.entries(friendEmoji)) {
+    if ((type||'').includes(key)) return val;
+  }
+  return '🤙';
+}
+
+// ── SEARCH BY PHONE ──
+async function searchByPhone() {
+  const phone = document.getElementById('phoneInput').value.trim();
+  if (!phone || phone.length < 10) {
+    showToast('Sahi phone number daalo!');
+    return;
+  }
+
+  document.getElementById('loadingEl').style.display = 'block';
+  document.getElementById('bookingsList').innerHTML = '';
+  document.getElementById('bookingsList').appendChild(document.getElementById('loadingEl'));
+
+  try {
+    const snap = await db.collection('bookings')
+      .where('phone', '==', phone)
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    allBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    document.getElementById('phonePrompt').style.display = 'none';
+    document.getElementById('filterTabs').style.display  = 'flex';
+
+    updateHeaderStats();
+    renderBookings();
+
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
+    document.getElementById('loadingEl').style.display = 'none';
+  }
+}
+
+// ── UPDATE HEADER STATS ──
+function updateHeaderStats() {
+  const approved = allBookings.filter(b => b.status === 'approved');
+  const spent    = approved.reduce((s,b) => s + (b.amount||0), 0);
+  document.getElementById('hTotal').textContent    = allBookings.length;
+  document.getElementById('hApproved').textContent = approved.length;
+  document.getElementById('hSpent').textContent    = '₹' + spent;
+}
+
+// ── FILTER ──
+function filterBookings(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderBookings();
+}
+
+// ── RENDER ──
+function renderBookings() {
+  let data = allBookings;
+  if (currentFilter !== 'all') data = data.filter(b => b.status === currentFilter);
+
+  const list = document.getElementById('bookingsList');
+  list.innerHTML = '';
+
+  if (data.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon">📭</div>
+        <div class="es-title">Koi booking nahi mili</div>
+        <div class="es-sub">Is category mein koi booking nahi hai abhi</div>
+        <button class="es-btn" onclick="window.location.href='index.html#book'">
+          🤙 Dost Book Karo
+        </button>
+      </div>`;
+    return;
+  }
+
+  data.forEach((b, i) => {
+    const ts = b.createdAt?.toDate?.().toLocaleDateString('en-IN', {
+      day:'2-digit', month:'short', year:'numeric'
+    }) || '—';
+    const time = b.callTime || 'Set nahi kiya';
+    const sc   = b.status === 'pending' ? 's-pending' : b.status === 'approved' ? 's-approved' : 's-rejected';
+    const sl   = b.status === 'pending' ? '⏳ Pending' : b.status === 'approved' ? '✅ Approved' : '❌ Rejected';
+    const emoji = getEmoji(b.friendType);
+
+    const card = document.createElement('div');
+    card.className = 'booking-card';
+    card.style.animationDelay = (i * 0.06) + 's';
+    card.innerHTML = `
+      <div class="bc-top">
+        <div class="bc-friend">
+          <div class="bc-avatar">${emoji}</div>
+          <div>
+            <div class="bc-name">${b.friendType || 'Friend'}</div>
+            <div class="bc-type">${b.language || 'Hindi'}</div>
+          </div>
+        </div>
+        <span class="status ${sc}">${sl}</span>
+      </div>
+      <div class="bc-divider"></div>
+      <div class="bc-details">
+        <div class="bc-detail">
+          <div class="bd-label">Plan</div>
+          <div class="bd-value blue">${b.selectedPlan || '—'}</div>
+        </div>
+        <div class="bc-detail">
+          <div class="bd-label">Amount</div>
+          <div class="bd-value green">₹${b.amount || 0}</div>
+        </div>
+        <div class="bc-detail">
+          <div class="bd-label">Book Kiya</div>
+          <div class="bd-value">${ts}</div>
+        </div>
+        <div class="bc-detail">
+          <div class="bd-label">Call Time</div>
+          <div class="bd-value">${time}</div>
+        </div>
+      </div>
+      <div class="bc-id">
+        <span class="bc-id-label">Booking ID</span>
+        <span class="bc-id-val">${b.id.slice(0,10).toUpperCase()}</span>
+      </div>
+      ${b.userMessage ? `<div style="margin-top:10px;padding:10px;background:#f8fafc;border-radius:10px;font-size:0.78rem;color:#64748b;font-style:italic;">"${b.userMessage}"</div>` : ''}
+    `;
+    list.appendChild(card);
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2500);
+}
+
+// Allow Enter on phone input
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('phoneInput');
+  if (inp) inp.focus();
+});
+</script>
+</body>
+</html>
