@@ -502,17 +502,21 @@ document.querySelectorAll('.mood-chip').forEach(chip => {
 <!-- ============================================
    BOTTOM NAVIGATION — Call a Friend
    ============================================ -->
+<!-- ============================================
+   BOTTOM NAVIGATION — Professional v2
+   Call a Friend
+   ============================================ -->
 
 <div class="bottom-nav" id="bottomNav">
 
   <!-- Home -->
   <a href="index.html" class="bn-item active" id="bnHome">
+    <div class="bn-active-dot"></div>
     <div class="bn-icon-wrap">
       <svg class="bn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
         <polyline points="9 22 9 12 15 12 15 22"/>
       </svg>
-      <div class="bn-active-dot"></div>
     </div>
     <span class="bn-label">Home</span>
   </a>
@@ -523,19 +527,18 @@ document.querySelectorAll('.mood-chip').forEach(chip => {
       <svg class="bn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.36 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.64a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
       </svg>
-      <div class="bn-active-dot"></div>
     </div>
     <span class="bn-label">My Call</span>
   </a>
 
   <!-- Account -->
   <a href="account.html" class="bn-item" id="bnAccount">
+    <div class="bn-active-dot"></div>
     <div class="bn-icon-wrap">
       <svg class="bn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
         <circle cx="12" cy="7" r="4"/>
       </svg>
-      <div class="bn-active-dot"></div>
     </div>
     <span class="bn-label">Account</span>
   </a>
@@ -543,58 +546,150 @@ document.querySelectorAll('.mood-chip').forEach(chip => {
 </div>
 
 <script>
-(function() {
-  /* Active state based on page */
+(function () {
+
+  /* ── Active page detection ── */
   const page = window.location.pathname.split('/').pop() || 'index.html';
-  const map = {
+  const pageMap = {
     'index.html'  : 'bnHome',
     ''            : 'bnHome',
     'mycall.html' : 'bnMyCall',
     'account.html': 'bnAccount'
   };
-  const activeId = map[page];
+  const activeId = pageMap[page];
   if (activeId) {
     document.querySelectorAll('.bn-item').forEach(i => i.classList.remove('active'));
     const el = document.getElementById(activeId);
     if (el) el.classList.add('active');
   }
 
-  /* Click ripple + bounce */
+
+  /* ── Sound Engine ── */
+  function playSound(type) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (type === 'click') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(680, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(420, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.12);
+      } else if (type === 'mycall') {
+        // Double tone for My Call
+        [600, 900].forEach((freq, i) => {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.type = 'sine';
+          o.frequency.value = freq;
+          const t = ctx.currentTime + i * 0.1;
+          g.gain.setValueAtTime(0.15, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+          o.start(t); o.stop(t + 0.15);
+        });
+      }
+    } catch(e) {}
+  }
+
+  /* ── Haptic Feedback ── */
+  function haptic(type) {
+    if (!navigator.vibrate) return;
+    const patterns = {
+      light  : [10],
+      medium : [20],
+      heavy  : [30],
+      double : [15, 60, 15],
+      success: [10, 50, 10, 50, 20]
+    };
+    navigator.vibrate(patterns[type] || patterns.light);
+  }
+
+  /* ── Click Handler ── */
   document.querySelectorAll('.bn-item').forEach(item => {
-    item.addEventListener('click', function(e) {
+    item.addEventListener('click', function (e) {
+
+      /* 1. Sound + Haptic */
+      if (this.id === 'bnMyCall') {
+        playSound('mycall');
+        haptic('double');
+      } else {
+        playSound('click');
+        haptic('light');
+      }
+
+      /* 2. Ripple */
       const ripple = document.createElement('span');
       ripple.classList.add('bn-ripple');
       const rect = this.getBoundingClientRect();
       ripple.style.left = (e.clientX - rect.left) + 'px';
       ripple.style.top  = (e.clientY - rect.top)  + 'px';
       this.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 600);
+      setTimeout(() => ripple.remove(), 700);
+
+      /* 3. Icon bounce */
       const icon = this.querySelector('.bn-icon-wrap');
       icon.classList.add('bn-bounce');
-      setTimeout(() => icon.classList.remove('bn-bounce'), 400);
+      setTimeout(() => icon.classList.remove('bn-bounce'), 450);
+
+      /* 4. Active switch */
+      document.querySelectorAll('.bn-item').forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+
     });
   });
 
-  /* Entrance animation */
+  /* ── Entrance animation ── */
   const nav = document.getElementById('bottomNav');
-  setTimeout(() => {
-    nav.style.transform = 'translateY(0)';
-    nav.style.opacity = '1';
-  }, 300);
-
-  /* Hide on scroll down, show on scroll up */
-  let lastScroll = 0;
-  window.addEventListener('scroll', () => {
-    const cur = window.scrollY;
-    if (cur > lastScroll && cur > 80) {
-      nav.style.transform = 'translateY(100%)';
-    } else {
+  requestAnimationFrame(() => {
+    setTimeout(() => {
       nav.style.transform = 'translateY(0)';
+      nav.style.opacity   = '1';
+    }, 250);
+  });
+
+  /* ── Hide on scroll down / Show on scroll up ── */
+  let lastScroll = 0;
+  let ticking    = false;
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const cur = window.scrollY;
+        if (cur > lastScroll + 8 && cur > 100) {
+          nav.style.transform = 'translateY(110%)';
+          nav.style.boxShadow = 'none';
+        } else if (cur < lastScroll - 4) {
+          nav.style.transform = 'translateY(0)';
+          nav.style.boxShadow = '0 -12px 40px rgba(3,105,161,0.08)';
+        }
+        lastScroll = cur;
+        ticking    = false;
+      });
+      ticking = true;
     }
-    lastScroll = cur;
   }, { passive: true });
+
+  /* ── Long press on My Call ── */
+  let pressTimer;
+  const myCall = document.getElementById('bnMyCall');
+  if (myCall) {
+    myCall.addEventListener('touchstart', () => {
+      pressTimer = setTimeout(() => haptic('heavy'), 400);
+    }, { passive: true });
+    myCall.addEventListener('touchend',   () => clearTimeout(pressTimer));
+    myCall.addEventListener('touchmove',  () => clearTimeout(pressTimer), { passive: true });
+  }
+
 })();
-</script>
+  </script>
+  
   
   
 
