@@ -1,646 +1,305 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Account — Call a Friend</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/nav.css">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<!-- AUTH GUARD -->
+<script>
+var _cfg={apiKey:"AIzaSyChyETFT5LuVb1tkj4R6IG5gx8tyaDJjuc",authDomain:"call-friend-b8bb3.firebaseapp.com",projectId:"call-friend-b8bb3",storageBucket:"call-friend-b8bb3.firebasestorage.app",messagingSenderId:"373738461022",appId:"1:373738461022:web:d9c74804f2018019b6e1cf"};
+if(!firebase.apps.length) firebase.initializeApp(_cfg);
+firebase.auth().onAuthStateChanged(function(u){
+  if(!u){ window.location.href='login.html'; }
+  else { loadUser(u); }
+});
+</script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --primary:#0369a1;--accent:#06b6d4;--dark:#0c1a2e;
-  --white:#fff;--off:#f8fafc;--slate:#64748b;--border:#e2e8f0;
-}
-body{font-family:"Plus Jakarta Sans",sans-serif;background:var(--off);color:var(--dark);min-height:100vh;}
+:root{--p:#0369a1;--a:#06b6d4;--d:#0c1a2e;--s:#64748b;--b:#e2e8f0;--o:#f8fafc;}
+body{font-family:"Plus Jakarta Sans",sans-serif;background:#f0f6ff;min-height:100vh;}
 
-/* HEADER */
-.page-header{
-  background:linear-gradient(135deg,var(--dark) 0%,#0369a1 100%);
-  padding:28px 20px 60px;
-  position:relative;overflow:hidden;
+/* LOADING SCREEN */
+#loadScreen{
+  position:fixed;inset:0;background:#f0f6ff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:999;gap:16px;
 }
-.page-header::before{
-  content:"";position:absolute;
-  width:300px;height:300px;border-radius:50%;
-  background:rgba(255,255,255,0.04);
-  top:-100px;right:-80px;
-}
-.page-header::after{
-  content:"";position:absolute;
-  width:200px;height:200px;border-radius:50%;
-  background:rgba(6,182,212,0.1);
-  bottom:-60px;left:-40px;
-}
-.header-top{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:24px;position:relative;z-index:1;
-}
-.header-title{font-size:1rem;font-weight:700;color:white;}
-.edit-btn{
-  background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
-  color:white;font-family:"Plus Jakarta Sans",sans-serif;font-size:0.78rem;
-  font-weight:600;padding:7px 16px;border-radius:100px;cursor:pointer;
-  transition:all 0.2s;
-}
-.edit-btn:hover{background:rgba(255,255,255,0.2);}
+.ls-icon{font-size:3rem;animation:lsPop 0.6s cubic-bezier(0.16,1,0.3,1);}
+@keyframes lsPop{from{transform:scale(0)}to{transform:scale(1)}}
+.ls-spin{width:36px;height:36px;border:3px solid #e0f2fe;border-top-color:var(--p);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* AVATAR */
-.avatar-section{
-  display:flex;flex-direction:column;align-items:center;
-  position:relative;z-index:1;
+/* PAGE */
+.page{display:none;padding-bottom:90px;}
+.page.show{display:block;animation:fadeIn 0.5s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* PROFILE CARD */
+.profile-card{
+  background:white;margin:16px 16px 12px;
+  border-radius:20px;padding:18px;
+  display:flex;align-items:center;gap:14px;
+  box-shadow:0 2px 16px rgba(3,105,161,0.08);
+  border:1px solid var(--b);
+  animation:slideDown 0.5s cubic-bezier(0.16,1,0.3,1) both;
 }
-.avatar{
-  width:80px;height:80px;border-radius:50%;
-  background:linear-gradient(135deg,#38bdf8,#06b6d4);
+@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+.pc-left{flex:1;min-width:0;}
+.pc-name{
+  font-size:1.05rem;font-weight:800;color:var(--d);
+  margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.pc-email{
+  font-size:0.75rem;color:var(--s);font-weight:500;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.pc-logo{
+  width:52px;height:52px;border-radius:14px;overflow:hidden;
+  flex-shrink:0;border:1.5px solid var(--b);
   display:flex;align-items:center;justify-content:center;
-  font-size:2rem;font-weight:800;color:white;
-  border:3px solid rgba(255,255,255,0.3);
-  box-shadow:0 8px 24px rgba(0,0,0,0.2);
-  margin-bottom:14px;
-  cursor:pointer;position:relative;overflow:hidden;
-  transition:transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  background:#f0f9ff;font-size:1.6rem;
 }
-.avatar:hover{transform:scale(1.05);}
-.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.avatar-edit{
-  position:absolute;bottom:0;left:0;right:0;
-  background:rgba(0,0,0,0.5);
-  font-size:0.55rem;font-weight:700;color:white;
-  padding:4px 0;text-align:center;letter-spacing:0.5px;
-}
-.user-name{font-size:1.1rem;font-weight:800;color:white;margin-bottom:4px;}
-.user-phone{font-size:0.82rem;color:rgba(255,255,255,0.6);font-weight:500;}
+.pc-logo img{width:100%;height:100%;object-fit:cover;}
 
-/* LOGIN PROMPT */
-.login-prompt{
-  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);
-  border-radius:16px;padding:20px;text-align:center;
-  position:relative;z-index:1;
-}
-.login-prompt p{color:rgba(255,255,255,0.7);font-size:0.85rem;margin-bottom:14px;}
-.login-prompt-btn{
-  background:white;color:var(--primary);font-family:"Plus Jakarta Sans",sans-serif;
-  font-weight:700;font-size:0.88rem;padding:10px 24px;
-  border-radius:100px;border:none;cursor:pointer;transition:all 0.2s;
-}
-.login-prompt-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.2);}
-
-/* CONTENT */
-.content{
-  margin-top:-28px;
-  padding:0 16px 24px;
-  position:relative;z-index:2;
-}
-
-/* QUICK STATS */
-.quick-stats{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:10px;margin-bottom:20px;
-}
-.qs-card{
-  background:white;border-radius:16px;padding:14px 10px;
-  text-align:center;box-shadow:0 2px 12px rgba(3,105,161,0.08);
-  border:1px solid var(--border);
-}
-.qs-num{font-size:1.4rem;font-weight:800;color:var(--primary);line-height:1;}
-.qs-label{font-size:0.65rem;color:var(--slate);font-weight:600;margin-top:4px;}
-
-/* SECTION */
-.section{
-  background:white;border-radius:20px;
-  box-shadow:0 2px 12px rgba(3,105,161,0.07);
-  border:1px solid var(--border);
-  overflow:hidden;margin-bottom:16px;
-}
-.section-header{
-  padding:16px 18px 12px;
-  border-bottom:1px solid var(--border);
-}
-.section-title{font-size:0.8rem;font-weight:700;color:var(--slate);letter-spacing:0.5px;text-transform:uppercase;}
-
-/* PROFILE FORM */
-.profile-field{
-  padding:14px 18px;border-bottom:1px solid #f8fafc;
-  display:flex;align-items:center;gap:12px;
-}
-.profile-field:last-child{border-bottom:none;}
-.pf-icon{
-  width:36px;height:36px;border-radius:10px;
-  background:#f0f9ff;display:flex;align-items:center;justify-content:center;
-  font-size:1rem;flex-shrink:0;
-}
-.pf-info{flex:1;}
-.pf-label{font-size:0.7rem;color:var(--slate);font-weight:600;margin-bottom:2px;}
-.pf-value{font-size:0.88rem;font-weight:600;color:var(--dark);}
-.pf-input{
-  width:100%;font-size:0.88rem;font-weight:600;color:var(--dark);
-  border:none;outline:none;background:transparent;font-family:"Plus Jakarta Sans",sans-serif;
-}
-.pf-edit{
-  font-size:0.72rem;color:var(--primary);font-weight:700;cursor:pointer;
-  padding:4px 10px;border-radius:8px;background:#f0f9ff;
-  border:none;font-family:"Plus Jakarta Sans",sans-serif;transition:all 0.2s;
-}
-.pf-edit:hover{background:#e0f2fe;}
-
-/* MENU ITEMS */
+/* MENU ITEM */
 .menu-item{
-  display:flex;align-items:center;gap:12px;
-  padding:15px 18px;border-bottom:1px solid #f8fafc;
-  cursor:pointer;transition:background 0.15s;text-decoration:none;
-  color:var(--dark);
+  background:white;margin:0 16px 10px;border-radius:16px;
+  display:flex;align-items:center;gap:14px;padding:16px 18px;
+  box-shadow:0 2px 10px rgba(3,105,161,0.06);border:1px solid var(--b);
+  cursor:pointer;text-decoration:none;color:var(--d);
+  transition:all 0.2s cubic-bezier(0.16,1,0.3,1);
+  position:relative;overflow:hidden;
+  animation:slideUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
 }
-.menu-item:last-child{border-bottom:none;}
-.menu-item:hover{background:#f8fbff;}
-.menu-item:active{background:#f0f9ff;}
+.menu-item:nth-child(1){animation-delay:0.05s}
+.menu-item:nth-child(2){animation-delay:0.1s}
+.menu-item:nth-child(3){animation-delay:0.15s}
+.menu-item:nth-child(4){animation-delay:0.2s}
+.menu-item:nth-child(5){animation-delay:0.25s}
+.menu-item:nth-child(6){animation-delay:0.3s}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.menu-item::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(3,105,161,0.04),rgba(6,182,212,0.02));
+  opacity:0;transition:opacity 0.2s;
+}
+.menu-item:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(3,105,161,0.12);}
+.menu-item:hover::after{opacity:1;}
+.menu-item:active{transform:scale(0.98);}
 .mi-icon{
-  width:38px;height:38px;border-radius:11px;
+  width:44px;height:44px;border-radius:12px;
   display:flex;align-items:center;justify-content:center;
-  font-size:1.1rem;flex-shrink:0;
+  font-size:1.3rem;flex-shrink:0;
 }
 .mi-text{flex:1;}
-.mi-title{font-size:0.88rem;font-weight:600;color:var(--dark);}
-.mi-sub{font-size:0.72rem;color:var(--slate);margin-top:1px;}
+.mi-title{font-size:0.9rem;font-weight:700;color:var(--d);}
+.mi-sub{font-size:0.72rem;color:var(--s);margin-top:2px;font-weight:500;}
 .mi-arrow{
-  color:var(--slate);font-size:0.9rem;
+  font-size:1.1rem;color:#f59e0b;font-weight:700;
   transition:transform 0.2s;
 }
-.menu-item:hover .mi-arrow{transform:translateX(3px);}
-
-/* TOGGLE */
-.mi-toggle{
-  width:44px;height:24px;border-radius:100px;
-  background:#e2e8f0;position:relative;cursor:pointer;
-  transition:background 0.3s;flex-shrink:0;border:none;
-}
-.mi-toggle.on{background:linear-gradient(90deg,var(--primary),var(--accent));}
-.mi-toggle::after{
-  content:"";position:absolute;
-  width:18px;height:18px;border-radius:50%;
-  background:white;top:3px;left:3px;
-  transition:transform 0.3s cubic-bezier(0.16,1,0.3,1);
-  box-shadow:0 2px 6px rgba(0,0,0,0.15);
-}
-.mi-toggle.on::after{transform:translateX(20px);}
+.menu-item:hover .mi-arrow{transform:translateX(4px);}
 
 /* LOGOUT */
-.logout-btn{
-  width:100%;padding:16px;
-  background:#fff0f0;border:1.5px solid #fecaca;
-  color:#dc2626;font-family:"Plus Jakarta Sans",sans-serif;
-  font-weight:700;font-size:0.92rem;border-radius:16px;
-  cursor:pointer;transition:all 0.2s;display:flex;
-  align-items:center;justify-content:center;gap:8px;
-  margin-top:8px;
+.logout-item{
+  background:white;margin:8px 16px 16px;border-radius:16px;
+  display:flex;align-items:center;gap:14px;padding:16px 18px;
+  box-shadow:0 2px 10px rgba(220,38,38,0.06);
+  border:1.5px solid #fecaca;
+  cursor:pointer;transition:all 0.2s;
+  animation:slideUp 0.5s 0.35s cubic-bezier(0.16,1,0.3,1) both;
 }
-.logout-btn:hover{background:#fee2e2;transform:translateY(-1px);}
-.logout-btn:active{transform:scale(0.98);}
-
-/* LOGIN MODAL */
-.modal-bg{
-  display:none;position:fixed;inset:0;
-  background:rgba(10,22,40,0.65);backdrop-filter:blur(4px);
-  z-index:500;align-items:flex-end;justify-content:center;
-}
-.modal-bg.show{display:flex;}
-.modal{
-  background:white;border-radius:28px 28px 0 0;
-  padding:28px 24px 36px;width:100%;max-width:480px;
-  animation:slideUp 0.4s cubic-bezier(0.16,1,0.3,1);
-}
-@keyframes slideUp{
-  from{transform:translateY(100%);opacity:0;}
-  to{transform:translateY(0);opacity:1;}
-}
-.modal-handle{
-  width:36px;height:4px;background:#e2e8f0;
-  border-radius:100px;margin:0 auto 20px;
-}
-.modal-title{font-size:1rem;font-weight:700;margin-bottom:20px;color:var(--dark);}
-.modal-field{margin-bottom:16px;}
-.modal-field label{display:block;font-size:0.75rem;font-weight:700;color:var(--slate);margin-bottom:7px;}
-.modal-field input{
-  width:100%;padding:12px 14px;border:1.5px solid var(--border);
-  border-radius:12px;font-family:"Plus Jakarta Sans",sans-serif;
-  font-size:0.88rem;color:var(--dark);outline:none;background:var(--off);
-  transition:all 0.2s;
-}
-.modal-field input:focus{border-color:var(--accent);background:white;box-shadow:0 0 0 3px rgba(6,182,212,0.1);}
-.modal-actions{display:flex;gap:10px;margin-top:20px;}
-.modal-save{
-  flex:1;padding:13px;background:linear-gradient(135deg,var(--primary),var(--accent));
-  color:white;border:none;border-radius:12px;font-family:"Plus Jakarta Sans",sans-serif;
-  font-weight:700;font-size:0.9rem;cursor:pointer;transition:all 0.2s;
-}
-.modal-save:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(3,105,161,0.3);}
-.modal-cancel{
-  padding:13px 20px;background:var(--off);border:1.5px solid var(--border);
-  color:var(--slate);border-radius:12px;font-family:"Plus Jakarta Sans",sans-serif;
-  font-weight:600;font-size:0.9rem;cursor:pointer;
-}
+.logout-item:hover{background:#fff5f5;transform:translateY(-1px);}
+.logout-item:active{transform:scale(0.98);}
+.lo-icon{width:44px;height:44px;border-radius:12px;background:#fef2f2;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+.lo-title{font-size:0.9rem;font-weight:700;color:#dc2626;flex:1;}
+.lo-arrow{font-size:1.1rem;color:#dc2626;}
 
 /* VERSION */
-.version-text{text-align:center;font-size:0.72rem;color:var(--slate);margin:16px 0 8px;font-weight:500;}
+.version{text-align:center;padding:8px;font-size:0.7rem;color:#94a3b8;font-weight:500;animation:fadeIn 0.5s 0.5s both;}
 
-/* ANIMATIONS */
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-.section{animation:fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;}
-.section:nth-child(1){animation-delay:0.05s;}
-.section:nth-child(2){animation-delay:0.1s;}
-.section:nth-child(3){animation-delay:0.15s;}
-.section:nth-child(4){animation-delay:0.2s;}
+/* SECTION LABEL */
+.sec-label{
+  font-size:0.65rem;font-weight:700;color:var(--s);
+  letter-spacing:1.5px;text-transform:uppercase;
+  padding:0 20px;margin:8px 0 6px;
+  animation:fadeIn 0.4s both;
+}
 
 /* TOAST */
 #toast{
   position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
-  background:var(--dark);color:white;padding:10px 20px;border-radius:100px;
-  font-size:0.82rem;font-weight:600;z-index:999;display:none;
-  box-shadow:0 4px 20px rgba(0,0,0,0.3);white-space:nowrap;
+  background:var(--d);color:white;padding:10px 22px;
+  border-radius:100px;font-size:0.82rem;font-weight:600;
+  z-index:999;display:none;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,0.25);
 }
+
+/* RIPPLE */
+.ripple{position:absolute;border-radius:50%;background:rgba(3,105,161,0.1);transform:scale(0);animation:rp 0.6s linear;pointer-events:none;}
+@keyframes rp{to{transform:scale(4);opacity:0}}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="page-header">
-  <div class="header-top">
-    <div class="header-title">👤 My Account</div>
-    <button class="edit-btn" onclick="openEditModal()">✏️ Edit Profile</button>
-  </div>
-
-  <!-- Logged In View -->
-  <div class="avatar-section" id="loggedInView" style="display:none;">
-    <div class="avatar" id="avatarEl" onclick="openEditModal()">
-      <span id="avatarInitial">?</span>
-      <div class="avatar-edit">EDIT</div>
-    </div>
-    <div class="user-name" id="displayName">Loading...</div>
-    <div class="user-phone" id="displayPhone">—</div>
-  </div>
-
-  <!-- Logged Out View -->
-  <div class="login-prompt" id="loggedOutView">
-    <p>Login karo apni bookings aur account details dekhne ke liye</p>
-    <button class="login-prompt-btn" onclick="window.location.href='index.html#book'">
-      🤙 Book Karo & Login
-    </button>
-  </div>
+<!-- LOADING -->
+<div id="loadScreen">
+  <div class="ls-icon">🤙</div>
+  <div class="ls-spin"></div>
 </div>
 
-<!-- CONTENT -->
-<div class="content">
+<!-- PAGE -->
+<div class="page" id="mainPage">
 
-  <!-- QUICK STATS -->
-  <div class="quick-stats" id="quickStats" style="display:none;">
-    <div class="qs-card">
-      <div class="qs-num" id="totalBookings">0</div>
-      <div class="qs-label">Total Calls</div>
+  <!-- PROFILE CARD -->
+  <div class="profile-card">
+    <div class="pc-left">
+      <div class="pc-name" id="pcName">Loading...</div>
+      <div class="pc-email" id="pcEmail">—</div>
     </div>
-    <div class="qs-card">
-      <div class="qs-num" id="approvedBookings">0</div>
-      <div class="qs-label">Completed</div>
-    </div>
-    <div class="qs-card">
-      <div class="qs-num" id="totalSpent">₹0</div>
-      <div class="qs-label">Total Spent</div>
+    <div class="pc-logo" id="pcLogo">
+      <img src="images/logo.png" alt="Logo" onerror="this.parentElement.innerHTML='🤙'">
     </div>
   </div>
 
-  <!-- PROFILE INFO -->
-  <div class="section" id="profileSection" style="display:none;">
-    <div class="section-header">
-      <div class="section-title">Profile Info</div>
-    </div>
-    <div class="profile-field">
-      <div class="pf-icon">👤</div>
-      <div class="pf-info">
-        <div class="pf-label">Full Name</div>
-        <div class="pf-value" id="pfName">—</div>
-      </div>
-    </div>
-    <div class="profile-field">
-      <div class="pf-icon">📞</div>
-      <div class="pf-info">
-        <div class="pf-label">Phone Number</div>
-        <div class="pf-value" id="pfPhone">—</div>
-      </div>
-    </div>
-    <div class="profile-field">
-      <div class="pf-icon">✉️</div>
-      <div class="pf-info">
-        <div class="pf-label">Email</div>
-        <div class="pf-value" id="pfEmail">—</div>
-      </div>
-    </div>
-    <div class="profile-field">
-      <div class="pf-icon">🗣️</div>
-      <div class="pf-info">
-        <div class="pf-label">Language</div>
-        <div class="pf-value" id="pfLang">Hindi</div>
-      </div>
-    </div>
-  </div>
+  <!-- MENU ITEMS -->
+  <div class="sec-label">My Activity</div>
 
-  <!-- SETTINGS -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">Settings</div>
+  <a class="menu-item" href="mycall.html" onclick="rippleClick(event,this)">
+    <div class="mi-icon" style="background:#eff6ff;">📞</div>
+    <div class="mi-text">
+      <div class="mi-title">My Orders</div>
+      <div class="mi-sub">Apni saari bookings dekho</div>
     </div>
-    <div class="menu-item" onclick="toggleNotif(this)">
-      <div class="mi-icon" style="background:#fef3c7;">🔔</div>
-      <div class="mi-text">
-        <div class="mi-title">Notifications</div>
-        <div class="mi-sub">Call alerts aur updates</div>
-      </div>
-      <button class="mi-toggle on" id="notifToggle"></button>
-    </div>
-    <div class="menu-item" onclick="toggleSound(this)">
-      <div class="mi-icon" style="background:#f0f9ff;">🔊</div>
-      <div class="mi-text">
-        <div class="mi-title">Sound Effects</div>
-        <div class="mi-sub">Button click sounds</div>
-      </div>
-      <button class="mi-toggle on" id="soundToggle"></button>
-    </div>
-    <div class="menu-item" onclick="changeLang()">
-      <div class="mi-icon" style="background:#f0fdf4;">🌐</div>
-      <div class="mi-text">
-        <div class="mi-title">Language</div>
-        <div class="mi-sub" id="currentLang">Hindi</div>
-      </div>
-      <span class="mi-arrow">›</span>
-    </div>
-  </div>
+    <div class="mi-arrow">›</div>
+  </a>
 
-  <!-- SUPPORT -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">Help & Support</div>
+  <a class="menu-item" href="rating.html" onclick="rippleClick(event,this)">
+    <div class="mi-icon" style="background:#fffbeb;">⭐</div>
+    <div class="mi-text">
+      <div class="mi-title">Rating</div>
+      <div class="mi-sub">Humein rate karo aur feedback do</div>
     </div>
-    <a class="menu-item" href="tel:+919152987821">
-      <div class="mi-icon" style="background:#fef3c7;">📞</div>
-      <div class="mi-text">
-        <div class="mi-title">iCall Helpline</div>
-        <div class="mi-sub">9152987821 — Emergency support</div>
-      </div>
-      <span class="mi-arrow">›</span>
-    </a>
-    <div class="menu-item" onclick="showToast('Coming soon!')">
-      <div class="mi-icon" style="background:#f0f9ff;">💬</div>
-      <div class="mi-text">
-        <div class="mi-title">Help & FAQ</div>
-        <div class="mi-sub">Common questions aur answers</div>
-      </div>
-      <span class="mi-arrow">›</span>
+    <div class="mi-arrow">›</div>
+  </a>
+
+  <div class="sec-label">Information</div>
+
+  <a class="menu-item" href="about.html" onclick="rippleClick(event,this)">
+    <div class="mi-icon" style="background:#f0fdf4;">ℹ️</div>
+    <div class="mi-text">
+      <div class="mi-title">About</div>
+      <div class="mi-sub">Call a Friend ke baare mein</div>
     </div>
-    <div class="menu-item" onclick="showToast('Coming soon!')">
-      <div class="mi-icon" style="background:#fdf4ff;">📄</div>
-      <div class="mi-text">
-        <div class="mi-title">Privacy Policy</div>
-        <div class="mi-sub">Aapka data safe hai</div>
-      </div>
-      <span class="mi-arrow">›</span>
+    <div class="mi-arrow">›</div>
+  </a>
+
+  <a class="menu-item" href="tel:9152987821" onclick="rippleClick(event,this)">
+    <div class="mi-icon" style="background:#fef3c7;">🆘</div>
+    <div class="mi-text">
+      <div class="mi-title">Help & Support</div>
+      <div class="mi-sub">iCall Helpline: 9152987821</div>
     </div>
-    <div class="menu-item" onclick="showToast('Coming soon!')">
-      <div class="mi-icon" style="background:#f0fdf4;">📋</div>
-      <div class="mi-text">
-        <div class="mi-title">Terms of Service</div>
-        <div class="mi-sub">Service ke rules</div>
-      </div>
-      <span class="mi-arrow">›</span>
+    <div class="mi-arrow">›</div>
+  </a>
+
+  <div class="sec-label">More</div>
+
+  <a class="menu-item" href="web.html" onclick="rippleClick(event,this)">
+    <div class="mi-icon" style="background:#fdf4ff;">🌐</div>
+    <div class="mi-text">
+      <div class="mi-title">Build Your Website</div>
+      <div class="mi-sub">Apni website banwao hamare saath</div>
     </div>
-  </div>
+    <div class="mi-arrow">›</div>
+  </a>
 
   <!-- LOGOUT -->
-  <button class="logout-btn" id="logoutBtn" style="display:none;" onclick="doLogout()">
-    🚪 Logout Karo
-  </button>
-
-  <div class="version-text">Call a Friend v1.0 — Made with ❤️</div>
-
-</div>
-
-<!-- EDIT PROFILE MODAL -->
-<div class="modal-bg" id="editModal" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">✏️ Profile Edit Karo</div>
-    <div class="modal-field">
-      <label>Full Name</label>
-      <input type="text" id="editName" placeholder="Aapka naam">
-    </div>
-    <div class="modal-field">
-      <label>Phone Number</label>
-      <input type="tel" id="editPhone" placeholder="+91 XXXXX XXXXX">
-    </div>
-    <div class="modal-field">
-      <label>Language</label>
-      <input type="text" id="editLang" placeholder="Hindi / Urdu / English">
-    </div>
-    <div class="modal-actions">
-      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
-      <button class="modal-save" onclick="saveProfile()">💾 Save Karo</button>
-    </div>
+  <div class="logout-item" onclick="doLogout()">
+    <div class="lo-icon">🚪</div>
+    <div class="lo-title">Logout</div>
+    <div class="lo-arrow">›</div>
   </div>
-</div>
 
-<!-- LANGUAGE MODAL -->
-<div class="modal-bg" id="langModal" onclick="if(event.target===this)document.getElementById('langModal').classList.remove('show')">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">🌐 Language Choose Karo</div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <button onclick="setLang('Hindi')"    class="modal-save" style="border-radius:12px;">🇮🇳 Hindi</button>
-      <button onclick="setLang('Urdu')"     class="modal-save" style="border-radius:12px;">🌙 Urdu</button>
-      <button onclick="setLang('English')"  class="modal-save" style="border-radius:12px;">🇬🇧 English</button>
-      <button onclick="setLang('Hinglish')" class="modal-save" style="border-radius:12px;">✨ Hinglish</button>
-      <button onclick="document.getElementById('langModal').classList.remove('show')" class="modal-cancel" style="border-radius:12px;">Cancel</button>
-    </div>
-  </div>
-</div>
+  <div class="version">Call a Friend v1.0 • Made with ❤️</div>
 
-<div id="toast"></div>
+</div>
 
 <!-- NAV -->
 <div id="nav-placeholder"></div>
 <script>
 fetch('nav.html')
-  .then(r => r.text())
-  .then(html => { document.getElementById('nav-placeholder').innerHTML = html; });
+  .then(r=>r.text())
+  .then(h=>{document.getElementById('nav-placeholder').innerHTML=h;});
 </script>
 
+<div id="toast"></div>
+
 <script>
-// ── FIREBASE ──
-firebase.initializeApp({
-  apiKey:"AIzaSyChyETFT5LuVb1tkj4R6IG5gx8tyaDJjuc",
-  authDomain:"call-friend-b8bb3.firebaseapp.com",
-  projectId:"call-friend-b8bb3",
-  storageBucket:"call-friend-b8bb3.firebasestorage.app",
-  messagingSenderId:"373738461022",
-  appId:"1:373738461022:web:d9c74804f2018019b6e1cf"
-});
-const auth = firebase.auth();
-const db   = firebase.firestore();
+const db = firebase.firestore();
 
-let currentUser = null;
-let userProfile = {};
+async function loadUser(user) {
+  // Show page, hide loader
+  document.getElementById('loadScreen').style.display = 'none';
+  document.getElementById('mainPage').classList.add('show');
 
-// ── AUTH STATE ──
-auth.onAuthStateChanged(async user => {
-  if (user) {
-    currentUser = user;
-    document.getElementById('loggedInView').style.display = 'flex';
-    document.getElementById('loggedOutView').style.display = 'none';
-    document.getElementById('profileSection').style.display = 'block';
-    document.getElementById('quickStats').style.display = 'grid';
-    document.getElementById('logoutBtn').style.display = 'flex';
-    loadProfile(user);
-    loadStats(user.uid);
-  } else {
-    document.getElementById('loggedInView').style.display = 'none';
-    document.getElementById('loggedOutView').style.display = 'block';
-    document.getElementById('profileSection').style.display = 'none';
-    document.getElementById('quickStats').style.display = 'none';
-    document.getElementById('logoutBtn').style.display = 'none';
-  }
-});
+  // Set name & email
+  const name  = user.displayName || 'User';
+  const email = user.email || '—';
+  document.getElementById('pcName').textContent  = name;
+  document.getElementById('pcEmail').textContent = email;
 
-// ── LOAD PROFILE ──
-async function loadProfile(user) {
+  // Try to get extra info from Firestore
   try {
     const snap = await db.collection('users').doc(user.uid).get();
-    if (snap.exists) {
-      userProfile = snap.data();
-    } else {
-      // Try to get from last booking
-      const bSnap = await db.collection('bookings')
-        .where('phone', '!=', '')
-        .orderBy('phone')
-        .orderBy('createdAt','desc')
-        .limit(1).get();
-      if (!bSnap.empty) {
-        const b = bSnap.docs[0].data();
-        userProfile = { name: b.name, phone: b.phone, language: b.language };
-      }
+    if(snap.exists && snap.data().name) {
+      document.getElementById('pcName').textContent = snap.data().name;
     }
-    updateUI();
-  } catch(e) {
-    updateUI();
-  }
-}
-
-function updateUI() {
-  const name  = userProfile.name  || currentUser?.email?.split('@')[0] || 'User';
-  const phone = userProfile.phone || '—';
-  const lang  = userProfile.language || 'Hindi';
-
-  document.getElementById('displayName').textContent  = name;
-  document.getElementById('displayPhone').textContent = phone;
-  document.getElementById('avatarInitial').textContent = name.charAt(0).toUpperCase();
-  document.getElementById('pfName').textContent   = name;
-  document.getElementById('pfPhone').textContent  = phone;
-  document.getElementById('pfEmail').textContent  = currentUser?.email || '—';
-  document.getElementById('pfLang').textContent   = lang;
-  document.getElementById('currentLang').textContent = lang;
-
-  // Pre-fill edit modal
-  document.getElementById('editName').value  = name !== 'User' ? name : '';
-  document.getElementById('editPhone').value = phone !== '—' ? phone : '';
-  document.getElementById('editLang').value  = lang;
-}
-
-// ── LOAD STATS ──
-async function loadStats(uid) {
-  try {
-    const phone = userProfile.phone;
-    if (!phone) return;
-    const snap = await db.collection('bookings').where('phone','==',phone).get();
-    const all  = snap.docs.map(d => d.data());
-    const approved = all.filter(b => b.status === 'approved');
-    const spent    = approved.reduce((s,b) => s + (b.amount||0), 0);
-    document.getElementById('totalBookings').textContent   = all.length;
-    document.getElementById('approvedBookings').textContent = approved.length;
-    document.getElementById('totalSpent').textContent      = '₹' + spent;
   } catch(e) {}
 }
 
-// ── SAVE PROFILE ──
-async function saveProfile() {
-  const name  = document.getElementById('editName').value.trim();
-  const phone = document.getElementById('editPhone').value.trim();
-  const lang  = document.getElementById('editLang').value.trim();
-
-  if (!name) { showToast('Naam daalna zaroori hai!'); return; }
-
-  try {
-    if (currentUser) {
-      await db.collection('users').doc(currentUser.uid).set({
-        name, phone, language: lang, updatedAt: new Date()
-      }, { merge: true });
-    }
-    userProfile = { name, phone, language: lang };
-    updateUI();
-    closeModal();
-    showToast('✅ Profile save ho gaya!');
-  } catch(e) {
-    showToast('❌ Error: ' + e.message);
-  }
-}
-
-// ── TOGGLES ──
-function toggleNotif(el) {
-  const t = el.querySelector('.mi-toggle');
-  t.classList.toggle('on');
-  showToast(t.classList.contains('on') ? '🔔 Notifications ON' : '🔕 Notifications OFF');
-}
-function toggleSound(el) {
-  const t = el.querySelector('.mi-toggle');
-  t.classList.toggle('on');
-  showToast(t.classList.contains('on') ? '🔊 Sound ON' : '🔇 Sound OFF');
-}
-
-// ── LANGUAGE ──
-function changeLang() {
-  document.getElementById('langModal').classList.add('show');
-}
-function setLang(lang) {
-  document.getElementById('currentLang').textContent = lang;
-  document.getElementById('pfLang').textContent = lang;
-  document.getElementById('editLang').value = lang;
-  document.getElementById('langModal').classList.remove('show');
-  if (currentUser) {
-    db.collection('users').doc(currentUser.uid).set({ language: lang }, { merge: true });
-  }
-  showToast('🌐 Language: ' + lang);
-}
-
-// ── LOGOUT ──
+// LOGOUT
 function doLogout() {
-  if (confirm('Logout karna chahte ho?')) {
-    auth.signOut().then(() => {
+  if(confirm('Logout karna chahte ho?')) {
+    firebase.auth().signOut().then(() => {
       showToast('👋 Logout ho gaye!');
-      setTimeout(() => window.location.href = 'index.html', 1000);
+      setTimeout(() => window.location.href = 'login.html', 800);
     });
   }
 }
 
-// ── MODAL ──
-function openEditModal() {
-  document.getElementById('editModal').classList.add('show');
-}
-function closeModal() {
-  document.getElementById('editModal').classList.remove('show');
+// RIPPLE
+function rippleClick(e, el) {
+  const r = document.createElement('span');
+  r.className = 'ripple';
+  const rect = el.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
+  el.appendChild(r);
+  setTimeout(() => r.remove(), 600);
 }
 
-// ── TOAST ──
+// HAPTIC
+function haptic() {
+  if(navigator.vibrate) navigator.vibrate(10);
+}
+document.querySelectorAll('.menu-item, .logout-item').forEach(el => {
+  el.addEventListener('click', haptic);
+});
+
+// TOAST
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.style.display = 'block';
-  setTimeout(() => t.style.display = 'none', 2500);
+  setTimeout(() => t.style.display = 'none', 2000);
 }
 </script>
 </body>
