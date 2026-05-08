@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Call a Friend</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--p:#0369a1;--a:#06b6d4;--d:#0c1a2e;--s:#64748b;--b:#e2e8f0;--o:#f8fafc;}
+html,body{height:100%;font-family:"Plus Jakarta Sans",sans-serif;}
+body{
+  min-height:100vh;
+  background:linear-gradient(160deg,#f0f9ff,#e0f2fe 50%,#f0f9ff);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px;position:relative;overflow:hidden;
+}
+.blob{position:fixed;border-radius:50%;filter:blur(70px);pointer-events:none;z-index:0;animation:bf 8s ease-in-out infinite;}
+.b1{width:400px;height:400px;background:rgba(3,105,161,0.08);top:-120px;left:-100px;}
+.b2{width:300px;height:300px;background:rgba(6,182,212,0.08);bottom:-80px;right:-80px;animation-delay:3s;}
+@keyframes bf{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.back{
+  position:fixed;top:20px;left:20px;z-index:10;
+  background:white;border:1.5px solid var(--b);border-radius:100px;
+  padding:8px 16px;font-size:0.78rem;font-weight:700;color:var(--s);
+  text-decoration:none;display:flex;align-items:center;gap:6px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.06);transition:all 0.2s;
+  animation:fadeIn 0.5s ease;
+}
+.back:hover{border-color:var(--a);color:var(--p);transform:translateX(-2px);}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.card{
+  width:100%;max-width:400px;
+  background:rgba(255,255,255,0.93);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-radius:28px;border:1px solid rgba(255,255,255,0.8);
+  box-shadow:0 20px 60px rgba(3,105,161,0.12),0 0 0 1px rgba(3,105,161,0.06);
+  padding:36px 28px;position:relative;z-index:1;
+  animation:cardIn 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(32px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.card::before{
+  content:"";position:absolute;top:0;left:28px;right:28px;height:3px;
+  background:linear-gradient(90deg,var(--p),var(--a));border-radius:0 0 4px 4px;
+}
+.logo{text-align:center;margin-bottom:28px;animation:fadeUp 0.6s 0.2s both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.logo-icon{
+  width:64px;height:64px;border-radius:20px;
+  background:linear-gradient(135deg,var(--d),var(--p));
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;margin:0 auto 14px;
+  box-shadow:0 8px 24px rgba(3,105,161,0.3);
+  animation:iconPop 0.6s 0.3s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes iconPop{from{opacity:0;transform:scale(0.6) rotate(-15deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+.logo-title{font-size:1.3rem;font-weight:800;color:var(--d);letter-spacing:-0.5px;margin-bottom:4px;}
+.logo-sub{font-size:0.78rem;color:var(--s);}
+.field{margin-bottom:16px;animation:fadeUp 0.5s both;}
+.field:nth-child(1){animation-delay:0.3s}
+.field:nth-child(2){animation-delay:0.4s}
+.field:nth-child(3){animation-delay:0.5s}
+.field label{display:block;font-size:0.72rem;font-weight:700;color:var(--s);margin-bottom:7px;text-transform:uppercase;letter-spacing:0.4px;}
+.iw{position:relative;}
+.iw .ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1rem;pointer-events:none;transition:transform 0.2s;}
+.iw:focus-within .ic{transform:translateY(-50%) scale(1.15);}
+.iw input{
+  width:100%;padding:13px 14px 13px 42px;
+  border:1.5px solid var(--b);border-radius:12px;
+  font-family:"Plus Jakarta Sans",sans-serif;font-size:0.9rem;color:var(--d);
+  background:var(--o);outline:none;transition:all 0.25s;
+}
+.iw input:focus{border-color:var(--a);background:white;box-shadow:0 0 0 4px rgba(6,182,212,0.1);transform:translateY(-1px);}
+.eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--s);padding:4px;transition:color 0.2s;}
+.eye:hover{color:var(--p);}
+.forgot{text-align:right;margin-top:6px;}
+.forgot a{font-size:0.73rem;color:var(--p);font-weight:600;text-decoration:none;}
+.forgot a:hover{text-decoration:underline;}
+.msg{display:none;padding:11px 14px;border-radius:10px;font-size:0.8rem;font-weight:600;margin-bottom:16px;text-align:center;animation:msgIn 0.3s ease;}
+@keyframes msgIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.msg.error{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+.msg.success{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;}
+.sbtn{
+  width:100%;padding:15px;
+  background:linear-gradient(135deg,var(--d),var(--p));
+  color:white;border:none;border-radius:12px;
+  font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:0.95rem;
+  cursor:pointer;position:relative;overflow:hidden;
+  box-shadow:0 6px 20px rgba(3,105,161,0.3);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all 0.3s cubic-bezier(0.16,1,0.3,1);
+  animation:fadeUp 0.5s 0.6s both;
+}
+.sbtn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(3,105,161,0.4);}
+.sbtn:active{transform:scale(0.98);}
+.sbtn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.sbtn::after{content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transition:left 0.5s;}
+.sbtn:hover::after{left:100%;}
+.spin{width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--s);font-size:0.73rem;font-weight:600;}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--b);}
+.gbtn{
+  width:100%;padding:13px;background:white;border:1.5px solid var(--b);border-radius:12px;
+  font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:0.86rem;color:var(--d);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:all 0.25s;box-shadow:0 2px 8px rgba(0,0,0,0.05);
+  animation:fadeUp 0.5s 0.7s both;
+}
+.gbtn:hover{border-color:rgba(3,105,161,0.3);box-shadow:0 6px 20px rgba(0,0,0,0.1);transform:translateY(-1px);}
+.gico{width:20px;height:20px;}
+.footer-txt{text-align:center;margin-top:20px;font-size:0.75rem;color:var(--s);animation:fadeUp 0.5s 0.8s both;}
+.footer-txt a{color:var(--p);font-weight:700;text-decoration:none;}
+.footer-txt a:hover{text-decoration:underline;}
+.success-ov{
+  display:none;position:fixed;inset:0;
+  background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);
+  z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+.success-ov.show{display:flex;}
+.sc{
+  width:80px;height:80px;border-radius:50%;
+  background:linear-gradient(135deg,#16a34a,#4ade80);
+  display:flex;align-items:center;justify-content:center;font-size:2.5rem;
+  animation:cp 0.5s cubic-bezier(0.16,1,0.3,1);
+  box-shadow:0 12px 36px rgba(22,163,74,0.3);
+}
+@keyframes cp{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(0)}}
+.st{font-size:1.2rem;font-weight:800;color:var(--d);}
+.ss{font-size:0.85rem;color:var(--s);}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.3);transform:scale(0);animation:rp 0.6s linear;pointer-events:none;}
+@keyframes rp{to{transform:scale(4);opacity:0}}
+</style>
+</head>
+<body>
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<a href="index.html" class="back">← Home</a>
+<div class="success-ov" id="sov">
+  <div class="sc">✓</div>
+  <div class="st">Login Ho Gaya! 🎉</div>
+  <div class="ss">Account page pe ja rahe hain...</div>
+</div>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">🤙</div>
+    <div class="logo-title">Call a Friend</div>
+    <div class="logo-sub">Apne account mein login karo</div>
+  </div>
+  <div class="msg" id="msg"></div>
+  <div class="field">
+    <label>Email</label>
+    <div class="iw">
+      <input type="email" id="email" placeholder="aapka@email.com" onkeydown="if(event.key==='Enter')login()">
+      <span class="ic">✉️</span>
+    </div>
+  </div>
+  <div class="field">
+    <label>Password</label>
+    <div class="iw">
+      <input type="password" id="pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()">
+      <span class="ic">🔒</span>
+      <button class="eye" onclick="toggleEye('pass',this)" type="button">👁️</button>
+    </div>
+    <div class="forgot"><a href="#" onclick="forgot()">Password bhool gaye?</a></div>
+  </div>
+  <div class="msg" id="msg2" style="display:none;"></div>
+  <button class="sbtn" id="lbtn" onclick="login()">
+    <span id="ltxt">Login Karo 🚀</span>
+    <div class="spin" id="lspin"></div>
+  </button>
+  <div class="divider">ya</div>
+  <button class="gbtn" onclick="glogin()">
+    <svg class="gico" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Google se Login Karo
+  </button>
+  <div class="footer-txt">Account nahi hai? <a href="signup.html">Sign Up Karo</a></div>
+</div>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyChyETFT5LuVb1tkj4R6IG5gx8tyaDJjuc",authDomain:"call-friend-b8bb3.firebaseapp.com",projectId:"call-friend-b8bb3",storageBucket:"call-friend-b8bb3.firebasestorage.app",messagingSenderId:"373738461022",appId:"1:373738461022:web:d9c74804f2018019b6e1cf"});
+const auth=firebase.auth();
+auth.onAuthStateChanged(u=>{if(u){document.getElementById('sov').classList.add('show');setTimeout(()=>window.location.href='account.html',1500);}});
+async function login(){
+  const e=document.getElementById('email').value.trim();
+  const p=document.getElementById('pass').value;
+  if(!e||!p){showMsg('Email aur password dono dalo!','error');return;}
+  setLoad(true);
+  try{
+    await auth.signInWithEmailAndPassword(e,p);
+    document.getElementById('sov').classList.add('show');
+    setTimeout(()=>window.location.href='account.html',1500);
+  }catch(err){
+    let m='❌ Login fail!';
+    if(err.code==='auth/wrong-password')m='❌ Password galat hai!';
+    if(err.code==='auth/user-not-found')m='❌ Email registered nahi!';
+    if(err.code==='auth/too-many-requests')m='⚠️ Bahut tries! Baad mein karo.';
+    if(err.code==='auth/invalid-email')m='❌ Email sahi nahi!';
+    showMsg(m,'error');setLoad(false);
+  }
+}
+async function glogin(){
+  try{
+    const r=await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    try{await firebase.firestore().collection('users').doc(r.user.uid).set({name:r.user.displayName,email:r.user.email,photo:r.user.photoURL},{merge:true});}catch(e2){}
+    document.getElementById('sov').classList.add('show');
+    setTimeout(()=>window.location.href='account.html',1500);
+  }catch(e){if(e.code!=='auth/popup-closed-by-user')showMsg('❌ Google login fail!','error');}
+}
+async function forgot(){
+  const e=document.getElementById('email').value.trim();
+  if(!e){showMsg('Pehle email daalo!','error');return;}
+  try{await auth.sendPasswordResetEmail(e);showMsg('✅ Reset email bheja! Check karo.','success');}
+  catch(e){showMsg('❌ Email registered nahi!','error');}
+}
+function toggleEye(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁️':'🙈';}
+function setLoad(s){const b=document.getElementById('lbtn');const t=document.getElementById('ltxt');const sp=document.getElementById('lspin');b.disabled=s;t.style.display=s?'none':'block';sp.style.display=s?'block':'none';}
+function showMsg(m,t){const el=document.getElementById('msg');el.textContent=m;el.className='msg '+t;el.style.display='block';}
+document.querySelectorAll('.sbtn').forEach(b=>{b.addEventListener('click',function(e){const r=document.createElement('span');r.className='ripple';const rc=this.getBoundingClientRect();const s=Math.max(rc.width,rc.height);r.style.cssText=`width:${s}px;height:${s}px;left:${e.clientX-rc.left-s/2}px;top:${e.clientY-rc.top-s/2}px`;this.appendChild(r);setTimeout(()=>r.remove(),600);});});
+</script>
+</body>
+</html>
