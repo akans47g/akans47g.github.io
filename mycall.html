@@ -207,7 +207,6 @@ function getEmoji(t){ for(const [k,v] of Object.entries(friendEmoji)){ if((t||''
 // ── AUTH ──
 auth.onAuthStateChanged(async user => {
   if(!user){
-    // Not logged in — show login prompt
     document.getElementById('loadScreen').style.display = 'none';
     document.getElementById('mainPage').classList.add('show');
     document.getElementById('tabsRow').style.display = 'none';
@@ -220,14 +219,7 @@ auth.onAuthStateChanged(async user => {
       </div>`;
     return;
   }
-
-  // Get user profile for phone number
-  try {
-    const snap = await db.collection('users').doc(user.uid).get();
-    if(snap.exists) userPhone = snap.data().phone || '';
-  } catch(e) {}
-
-  // Load bookings by phone OR by uid
+  // Load bookings by email match
   await loadBookings(user);
 });
 
@@ -236,55 +228,59 @@ async function loadBookings(user) {
   document.getElementById('mainPage').classList.add('show');
 
   try {
-    let snap;
-    if(userPhone) {
-      // Search by phone number (linked to booking form)
-      snap = await db.collection('bookings')
-        .where('phone', '==', userPhone)
-        .orderBy('createdAt','desc')
-        .get();
-    } else {
-      // Search by email if no phone
-      const email = user.email || '';
-      snap = await db.collection('bookings')
-        .where('phone', '==', email)
-        .orderBy('createdAt','desc')
-        .get();
-    }
+    // Get ALL bookings from Firestore
+    const snap = await db.collection('bookings').get();
+    
+    // Get user email from Firebase Auth
+    const userEmail = (user.email || '').toLowerCase().trim();
+    
+    // Get all phone numbers from user's Firestore profile
+    const userPhones = [];
+    try {
+      const userDoc = await db.collection('users').doc(user.uid).get();
+      if(userDoc.exists) {
+        const data = userDoc.data();
+        if(data.phone) userPhones.push(data.phone.replace(/\s+/g,''));
+        if(data.phones) userPhones.push(...data.phones);
+      }
+    } catch(e) {}
 
-    allBookings = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    // Filter bookings by email match
+    // Booking ka 'userEmail' field check karo ya phone match karo
+    allBookings = snap.docs
+      .map(d => ({id:d.id, ...d.data()}))
+      .filter(b => {
+        const bEmail = (b.email || b.userEmail || '').toLowerCase().trim();
+        const bPhone = (b.phone || '').replace(/\s+/g,'');
+        
+        // Match by email
+        if(bEmail && userEmail && bEmail === userEmail) return true;
+        // Match by phone (if user has saved phone)
+        if(userPhones.length > 0 && userPhones.includes(bPhone)) return true;
+        // Match by userUid (if saved during booking)
+        if(b.userUid && b.userUid === user.uid) return true;
+        
+        return false;
+      });
+
+    // Sort by date (newest first)
+    allBookings.sort((a,b) => {
+      const ta = a.createdAt?.toDate?.()?.getTime() || 0;
+      const tb = b.createdAt?.toDate?.()?.getTime() || 0;
+      return tb - ta;
+    });
+
     updateStats();
     renderBookings();
 
   } catch(e) {
-    // If index error, try without orderBy
-    try {
-      let snap2;
-      if(userPhone) {
-        snap2 = await db.collection('bookings').where('phone','==',userPhone).get();
-      } else {
-        snap2 = await db.collection('bookings').get();
-        // Filter by user email
-        const docs = snap2.docs.filter(d => d.data().phone === user.email);
-        allBookings = docs.map(d => ({id:d.id, ...d.data()}));
-        updateStats(); renderBookings(); return;
-      }
-      allBookings = snap2.docs.map(d => ({id:d.id,...d.data()}));
-      // Sort manually
-      allBookings.sort((a,b) => {
-        const ta = a.createdAt?.toDate?.()?.getTime() || 0;
-        const tb = b.createdAt?.toDate?.()?.getTime() || 0;
-        return tb - ta;
-      });
-      updateStats(); renderBookings();
-    } catch(e2) {
-      document.getElementById('bookingsList').innerHTML = `
-        <div class="empty">
-          <div class="ei">⚠️</div>
-          <div class="et">Kuch error aaya</div>
-          <div class="es">Dobara try karo</div>
-        </div>`;
-    }
+    console.error(e);
+    document.getElementById('bookingsList').innerHTML = `
+      <div class="empty">
+        <div class="ei">⚠️</div>
+        <div class="et">Kuch error aaya</div>
+        <div class="es">Page refresh karo ya dobara try karo</div>
+      </div>`;
   }
 }
 
